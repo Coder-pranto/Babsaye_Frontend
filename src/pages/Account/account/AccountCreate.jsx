@@ -1,0 +1,69 @@
+import { FaUser, FaPhone, FaDollarSign, FaList, FaBook } from 'react-icons/fa';
+import useFormInput from '../../../hooks/useFormInput';
+import FormInput from '../../../components/FormInputs/FormInput';
+import FormTextArea from '../../../components/FormInputs/FormTextArea';
+import { createAccount } from '../../../services/api';
+import { toast } from 'react-toastify';
+
+
+const AccountCreate = () => {
+    const accountTitle = useFormInput('');
+    const initialBalance = useFormInput(0,'number');
+    const accountNumber = useFormInput('');
+    const contactPerson = useFormInput('');
+    const phoneNumber = useFormInput('','number');
+    const description = useFormInput('');
+
+
+    const handleSubmit = async(e) => {
+        e.preventDefault();
+        
+        const formData = {
+            accountTitle: accountTitle.value,
+            initialBalance: initialBalance.value,
+            accountNumber: accountNumber.value,
+            contactPerson: contactPerson.value,
+            phoneNumber: phoneNumber.value,
+            description: description.value,
+        };
+
+        try {
+            const res = await createAccount(formData);
+            console.log('Create account successfully!', res.data);
+            toast.success('Create account successfully!',{
+                position:'top-right',
+                autoClose:5000,
+            })
+        } catch (err) {
+            console.log("Failed to create account:", err.message)
+            toast.error('Failed to create account!',{
+                position:'top-right',
+                autoClose:5000,
+            })
+        }
+    };
+
+    return (
+        <div className="bg-white rounded shadow-lg w-full max-w-6xl mx-auto mt-12">
+            <div className="h-16 flex justify-center items-center text-2xl font-bold bg-[#5D5B10] text-white">
+                <span>Account Create</span>
+            </div>
+            <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 p-8">
+                <FormInput label="Account Title" icon={<FaList />} {...accountTitle} />
+                <FormInput label="Initial Balance" icon={<FaDollarSign />} {...initialBalance} />
+                <FormInput label="Account Number" icon={<FaBook />} {...accountNumber} />
+                <FormInput label="Contact Person" icon={<FaUser />} {...contactPerson} />
+                <FormInput label="Phone Number" icon={<FaPhone />} {...phoneNumber} />
+                <div className="col-span-2">
+                    <FormTextArea label="Description" icon={<FaBook />} {...description} />
+                </div>
+                <button type="submit" className="col-span-2 bg-[#5D5B10] text-white py-2 mx-4 rounded hover:bg-green-600">
+                    Add Account
+                </button>
+            </form>
+
+        </div>
+    );
+};
+
+export default AccountCreate;
