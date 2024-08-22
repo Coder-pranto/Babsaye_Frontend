@@ -70,8 +70,19 @@ import AttendanceCreate from "../pages/Staff/StaffAttendance/AttendanceCreate";
 import AttendanceReport from "../pages/Staff/StaffAttendance/AttendanceReport";
 import MonthlyAttendanceReport from "../pages/Staff/StaffAttendance/MonthlyAttendanceReport";
 import ProductGroup from "../pages/Product/product/ProductGroup";
+import MyProfile from "../pages/Profile/MyProfile";
+import ChangePassword from "../pages/Profile/ChangePassword";
+import Role from "../pages/Profile/RoleManagement";
+import CompanyInformation from "../pages/Profile/CompanyInformation";
 
 
+const dummyUser = {
+  name: 'Pranto',
+  email: 'pranto@gmail.com',
+  phone: '01521206350',
+  address: '456 Elm St, Metropolis, USA',
+  bio: 'Experienced project manager with a passion for leading teams to success. Skilled in Agile methodologies and cross-functional collaboration.',
+};
 
 
 const router = createBrowserRouter([
@@ -349,6 +360,22 @@ const router = createBrowserRouter([
         path: "/add_staff_salary",
         element:<AddStaffSalary/>
       },
+      {
+        path: "/myprofile",
+        element:<MyProfile  user={dummyUser} />
+      },
+      {
+        path: "/change_password",
+        element:<ChangePassword/>
+      },
+      {
+        path: "/role",
+        element:<Role/>
+      },
+      {
+        path: "/company_information",
+        element:<CompanyInformation/>
+      },
     //   {
     //     path: "/menu",
     //     element: <ProtectedRoute element={<Products />} />,
@@ -362,3 +389,7 @@ const router = createBrowserRouter([
 ]);
 
 export default router;
+
+
+
+

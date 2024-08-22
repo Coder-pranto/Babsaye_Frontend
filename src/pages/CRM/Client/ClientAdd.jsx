@@ -1,7 +1,3 @@
-
-
-
-
 import { useState, useEffect } from 'react';
 import { FaUser, FaPhone, FaBuilding, FaEnvelope } from 'react-icons/fa';
 import { HiOutlineDocumentAdd } from 'react-icons/hi';

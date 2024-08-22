@@ -133,11 +133,12 @@ import { FaCog, FaUser, FaPowerOff, FaPlus, FaMinus, FaAngleDown, FaAngleUp } fr
 import { RxDoubleArrowRight } from "react-icons/rx";
 import { useLogout } from '../utils/Logout';
 import { sections } from '../utils/subSections';
-import { Link } from 'react-router-dom';
+import { Link , useNavigate} from 'react-router-dom';
 
 const Sidebar = ({ isCollapsed, handleHover }) => {
     const [openSections, setOpenSections] = useState({});
     const logout = useLogout();
+    const navigate = useNavigate();
 
     const toggleSection = (sectionName) => {
         setOpenSections((prev) => ({
@@ -215,7 +216,7 @@ const Sidebar = ({ isCollapsed, handleHover }) => {
                     <div className="relative group">
                         <FaUser className="w-8 h-8 p-2 bg-gray-100 border-gray-400 border-2 rounded-full cursor-pointer" />
                         {!isCollapsed && (
-                            <span className="tooltip-text bg-gray-700 p-2 rounded text-xs text-white absolute left-1/2 transform -translate-x-1/2 translate-y-6 opacity-0 group-hover:opacity-100">Profile</span>
+                            <span className="tooltip-text bg-gray-700 p-2 rounded text-xs text-white absolute left-1/2 transform -translate-x-1/2 translate-y-6 opacity-0 group-hover:opacity-100" onClick={()=> navigate('/myprofile')}>Profile</span>
                         )}
                     </div>
                     <div className="relative group">
