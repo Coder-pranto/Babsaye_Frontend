@@ -56,8 +56,8 @@ export const sections = [
                 subSubCategories: [
                     { name: "Add New Expense" },
                     { name: "Expense List" },
-                    { name: "Supplier Payment" },
-                    { name: "Money Return" }
+                    // { name: "Supplier Payment" },
+                    // { name: "Money Return" }
                 ]
             },
             {

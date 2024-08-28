@@ -8,14 +8,8 @@ import FormFileInput from '../../../components/FormInputs/FormFileInput';
 import { addClient, fetchClientGroups } from '../../../services/api';
 import useFormFileInput from '../../../hooks/useFormFileInput';
 import { toast } from 'react-toastify';
+import { generateCustomId } from '../../../utils/CustomIDCreator';
 
-// Function to generate a custom ID
-const generateCustomId = () => {
-  const prefix = 'CLT-';
-  const timestamp = Date.now(); // Current timestamp
-  const randomNumber = Math.floor(Math.random() * 1000); // Random number between 0 and 999
-  return `${prefix}${timestamp}-${randomNumber}`;
-};
 
 const ClientAdd = () => {
     const [idNo, setIdNo] = useState(''); 
@@ -34,7 +28,7 @@ const ClientAdd = () => {
 
     useEffect(() => {
         // Generate a unique ID when the component mounts
-        setIdNo(generateCustomId());
+        setIdNo(generateCustomId('CLT-'));
 
         const fetchGroups = async () => {
             try {

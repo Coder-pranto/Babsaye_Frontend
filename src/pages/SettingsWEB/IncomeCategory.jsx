@@ -1,6 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import Button from '../../components/Button';
+import {
+  fetchCategories,
+  addCategory,
+  updateCategory,
+  deleteCategory
+} from '../../services/api'; 
+import { toast } from 'react-toastify';
 
 const IncomeCategory = () => {
   const [searchCategory, setSearchCategory] = useState('');
@@ -8,19 +15,20 @@ const IncomeCategory = () => {
   const [newCategory, setNewCategory] = useState('');
   const [editMode, setEditMode] = useState(false);
   const [currentCategoryId, setCurrentCategoryId] = useState(null);
-  const [data, setData] = useState([
-    {
-      id: 1,
-      name: 'Consulting',
-      createdAt: '2024-08-01',
-    },
-    {
-      id: 2,
-      name: 'Sales',
-      createdAt: '2024-08-02',
-    },
-    // Add more categories as needed
-  ]);
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    try {
+      const response = await fetchCategories();
+      setData(response.data);
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    }
+  };
 
   const handleSearch = () => {
     return searchCategory
@@ -30,24 +38,29 @@ const IncomeCategory = () => {
       : data;
   };
 
-  const handleAddCategory = () => {
-    if (editMode) {
-      setData(
-        data.map((item) =>
-          item.id === currentCategoryId ? { ...item, name: newCategory } : item
-        )
-      );
-    } else {
-      const newCategoryData = {
-        id: data.length + 1,
-        name: newCategory,
-        createdAt: new Date().toISOString().split('T')[0],
-      };
-      setData([...data, newCategoryData]);
+  const handleAddCategory = async () => {
+    try {
+      if (editMode) {
+        await updateCategory(currentCategoryId, { name: newCategory });
+        setData(
+          data.map((item) =>
+            item._id === currentCategoryId ? { ...item, name: newCategory } : item
+          )
+        );
+        toast.success("Category upodated successfully!");
+      } else {
+        const response = await addCategory({ name: newCategory });
+        setData([...data, response.data]);
+        toast.success("New category Added!");
+
+      }
+      setNewCategory('');
+      setModalOpen(false);
+      setEditMode(false);
+    } catch (error) {
+      console.error('Failed to add/update category:', error.message);
+      toast.error('Failed to add/update category');
     }
-    setNewCategory('');
-    setModalOpen(false);
-    setEditMode(false);
   };
 
   const handleEdit = (id, name) => {
@@ -57,8 +70,19 @@ const IncomeCategory = () => {
     setModalOpen(true);
   };
 
-  const handleDelete = (id) => {
-    setData(data.filter((item) => item.id !== id));
+
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm("Are you sure you want to delete this category?");
+    if (confirmed) {
+      try {
+        await deleteCategory(id);
+        setData(data.filter((item) => item._id !== id));
+        toast.success("Category Deleted")
+      } catch (error) {
+        console.error('Failed to delete category:', error.message);
+        toast.error('Failed to delete category');
+      }
+    }
   };
 
   const filteredData = handleSearch();
@@ -106,28 +130,42 @@ const IncomeCategory = () => {
           </tr>
         </thead>
         <tbody>
-          {filteredData.map((item) => (
-            <tr key={item.id} className="w-full">
-              <td className="py-2 px-4 border border-gray-300">{item.id}</td>
-              <td className="py-2 px-4 border border-gray-300">{item.name}</td>
-              <td className="py-2 px-4 border border-gray-300">{item.createdAt}</td>
-              <td className="py-2 px-4 border border-gray-300">
-                <button
-                  onClick={() => handleEdit(item.id, item.name)}
-                  className="text-blue-500 hover:text-blue-700 mr-2"
-                >
-                  <FaEdit />
-                </button>
-                <button
-                  onClick={() => handleDelete(item.id)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <FaTrash />
-                </button>
+          {filteredData.length > 0 ? (
+            filteredData.map((item) => (
+              <tr key={item._id} className="w-full">
+                <td className="py-2 px-4 border border-gray-300">{item._id}</td>
+                <td className="py-2 px-4 border border-gray-300">{item.name}</td>
+                <td className="py-2 px-4 border border-gray-300">
+                  {item.createdAt.split('T')[0]}
+                </td>
+                <td className="py-2 px-4 border border-gray-300">
+                  <button
+                    onClick={() => handleEdit(item._id, item.name)}
+                    className="text-blue-500 hover:text-blue-700 mr-2"
+                  >
+                    <FaEdit />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item._id)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <FaTrash />
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td
+                colSpan="4"
+                className="py-4 px-4 border border-gray-300 text-center text-gray-500"
+              >
+                No categories available
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
+
       </table>
 
       {/* Add/Edit Category Modal */}

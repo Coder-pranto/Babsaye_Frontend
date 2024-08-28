@@ -1,6 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import Button from '../../components/Button';
+import {
+  fetchSubcategories,
+  addSubcategory,
+  updateSubcategory,
+  deleteSubcategory,
+  fetchCategories
+} from '../../services/api'; 
+import { toast } from 'react-toastify';
 
 const IncomeSubcategory = () => {
   const [searchSubcategory, setSearchSubcategory] = useState('');
@@ -9,28 +17,31 @@ const IncomeSubcategory = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [editMode, setEditMode] = useState(false);
   const [currentSubcategoryId, setCurrentSubcategoryId] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [data, setData] = useState([]);
 
-  const [categories] = useState([
-    { id: 1, name: 'Consulting' },
-    { id: 2, name: 'Sales' },
-    // Add more categories as needed
-  ]);
+  useEffect(() => {
+    loadSubcategories();
+    loadCategories();
+  }, [modalOpen]);
 
-  const [data, setData] = useState([
-    {
-      id: 1,
-      category: 'Consulting',
-      name: 'Strategy Consulting',
-      createdAt: '2024-08-01',
-    },
-    {
-      id: 2,
-      category: 'Sales',
-      name: 'Direct Sales',
-      createdAt: '2024-08-02',
-    },
-    // Add more subcategories as needed
-  ]);
+  const loadSubcategories = async () => {
+    try {
+      const response = await fetchSubcategories();
+      setData(response.data);
+    } catch (error) {
+      console.error('Failed to fetch subcategories:', error);
+    }
+  };
+
+  const loadCategories = async () => {
+    try {
+      const response = await fetchCategories();
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    }
+  };
 
   const handleSearch = () => {
     return searchSubcategory
@@ -40,31 +51,42 @@ const IncomeSubcategory = () => {
       : data;
   };
 
-  const handleAddSubcategory = () => {
-    if (editMode) {
-      setData(
-        data.map((item) =>
-          item.id === currentSubcategoryId
-            ? { ...item, name: newSubcategory, category: selectedCategory }
-            : item
-        )
-      );
-    } else {
-      const newSubcategoryData = {
-        id: data.length + 1,
-        category: selectedCategory,
-        name: newSubcategory,
-        createdAt: new Date().toISOString().split('T')[0],
-      };
-      setData([...data, newSubcategoryData]);
+  const handleAddSubcategory = async () => {
+    try {
+      if (editMode) {
+        await updateSubcategory(currentSubcategoryId, {
+          name: newSubcategory,
+          category: selectedCategory,
+        });
+        setData(
+          data.map((item) =>
+            item._id === currentSubcategoryId
+              ? { ...item, name: newSubcategory, category: selectedCategory }
+              : item
+          )
+        );
+        toast.success('Subcategory updated successfully!');
+      } else {
+        console.log(newSubcategory, selectedCategory);
+        const response = await addSubcategory({
+          name: newSubcategory,
+          category: selectedCategory,
+        });
+        setData([...data, response.data]);
+        toast.success('New subcategory added!');
+      }
+      setNewSubcategory('');
+      setSelectedCategory('');
+      setModalOpen(false);
+      setEditMode(false);
+    } catch (error) {
+      console.error('Failed to add/update subcategory:', error.message);
+      toast.error('Failed to add/update subcategory');
     }
-    setNewSubcategory('');
-    setSelectedCategory('');
-    setModalOpen(false);
-    setEditMode(false);
   };
 
   const handleEdit = (id, name, category) => {
+    console.log()
     setNewSubcategory(name);
     setSelectedCategory(category);
     setCurrentSubcategoryId(id);
@@ -72,8 +94,20 @@ const IncomeSubcategory = () => {
     setModalOpen(true);
   };
 
-  const handleDelete = (id) => {
-    setData(data.filter((item) => item.id !== id));
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this subcategory?'
+    );
+    if (confirmed) {
+      try {
+        await deleteSubcategory(id);
+        setData(data.filter((item) => item._id !== id));
+        toast.success('Subcategory deleted successfully!');
+      } catch (error) {
+        console.error('Failed to delete subcategory:', error.message);
+        toast.error('Failed to delete subcategory');
+      }
+    }
   };
 
   const filteredData = handleSearch();
@@ -123,28 +157,41 @@ const IncomeSubcategory = () => {
           </tr>
         </thead>
         <tbody>
-          {filteredData.map((item) => (
-            <tr key={item.id} className="w-full">
-              <td className="py-2 px-4 border border-gray-300">{item.id}</td>
-              <td className="py-2 px-4 border border-gray-300">{item.category}</td>
-              <td className="py-2 px-4 border border-gray-300">{item.name}</td>
-              <td className="py-2 px-4 border border-gray-300">{item.createdAt}</td>
-              <td className="py-2 px-4 border border-gray-300">
-                <button
-                  onClick={() => handleEdit(item.id, item.name, item.category)}
-                  className="text-blue-500 hover:text-blue-700 mr-2"
-                >
-                  <FaEdit />
-                </button>
-                <button
-                  onClick={() => handleDelete(item.id)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <FaTrash />
-                </button>
+          {filteredData.length > 0 ? (
+            filteredData.map((item) => (
+              <tr key={item._id} className="w-full">
+                <td className="py-2 px-4 border border-gray-300">{item._id}</td>
+                <td className="py-2 px-4 border border-gray-300">{item.category.name}</td>
+                <td className="py-2 px-4 border border-gray-300">{item.name}</td>
+                <td className="py-2 px-4 border border-gray-300">
+                  {item.createdAt.split('T')[0]}
+                </td>
+                <td className="py-2 px-4 border border-gray-300">
+                  <button
+                    onClick={() => handleEdit(item._id, item.name, item.category)}
+                    className="text-blue-500 hover:text-blue-700 mr-2"
+                  >
+                    <FaEdit />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item._id)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <FaTrash />
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td
+                colSpan="5"
+                className="py-4 px-4 border border-gray-300 text-center text-gray-500"
+              >
+                No subcategories available
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
 
@@ -156,14 +203,14 @@ const IncomeSubcategory = () => {
               {editMode ? 'Edit Subcategory' : 'Add New Subcategory'}
             </h3>
             <select
-              value={selectedCategory}
+              value={selectedCategory._id}
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="input w-full p-2 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Select Category</option>
               {categories.map((category) => (
-                <option key={category.id} value={category.name}>
-                  {category.name}
+                <option key={category._id} value={category._id}>
+                  {category.name} 
                 </option>
               ))}
             </select>

@@ -1,44 +1,54 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaPlus } from 'react-icons/fa';
 import Button from '../../../components/Button';
+import { fetchAllReceives } from '../../../services/api'; // import your API function
 
 const ReceiveList = () => {
   const [searchClient, setSearchClient] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const [receives, setReceives] = useState([
-    {
-      id: 1,
-      date: '2024-07-29',
-      idNo: '001',
-      client: 'John Doe',
-      description: 'Payment for invoice #123',
-      amount: 5000,
-      receipt: 'RCPT001',
-    },
-    {
-      id: 2,
-      date: '2024-07-30',
-      idNo: '002',
-      client: 'Jane Smith',
-      description: 'Payment for invoice #456',
-      amount: 1500,
-      receipt: 'RCPT002',
-    },
-    // Add more receive objects as needed
-  ]);
+  const [receives, setReceives] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleSearch = () => {
-    // Implement search functionality here
+    setCurrentPage(1);
+    fetchData();
   };
 
   const handleReset = () => {
     setSearchClient('');
     setStartDate('');
     setEndDate('');
+    fetchData();
   };
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = {
+        client: searchClient,
+        startDate,
+        endDate,
+        limit: rowsPerPage,
+        page: currentPage,
+      };
+      const response = await fetchAllReceives(params);
+      setReceives(response.data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [searchClient, startDate, endDate, rowsPerPage, currentPage]);
 
   const totalAmount = receives.reduce((total, receive) => total + receive.amount, 0);
 
@@ -52,6 +62,7 @@ const ReceiveList = () => {
           text="Add New"
           bgColor="bg-[#5D5B10] hover:bg-[#5D5B00]"
           textColor="text-white border border-green-500"
+          to="/add_new_receive"
         />
       </div>
 
@@ -118,48 +129,53 @@ const ReceiveList = () => {
         <label className="ml-2 text-md font-medium text-gray-700">entries</label>
       </div>
 
-      <table className="min-w-full bg-white">
-        <thead>
-          <tr>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">SL</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Date</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">ID No</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Client</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Description</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Amount</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Money Receipt</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {receives.slice(0, rowsPerPage).map((receive, index) => (
-            <tr key={receive.id}>
-              <td className="py-2 px-4 border border-gray-200">{index + 1}</td>
-              <td className="py-2 px-4 border border-gray-200">{receive.date}</td>
-              <td className="py-2 px-4 border border-gray-200">{receive.idNo}</td>
-              <td className="py-2 px-4 border border-gray-200">{receive.client}</td>
-              <td className="py-2 px-4 border border-gray-200">{receive.description}</td>
-              <td className="py-2 px-4 border border-gray-200">{receive.amount}</td>
-              <td className="py-2 px-4 border border-gray-200">{receive.receipt}</td>
-              <td className="py-2 px-4 border border-gray-200">
-                {/* Add action buttons or links here */}
-              </td>
+      {loading ? (
+        <p>Loading...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
+      ) : (
+        <table className="min-w-full bg-white">
+          <thead>
+            <tr>
+              <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">SL</th>
+              <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Date</th>
+              <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">ID No</th>
+              <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Client</th>
+              <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Description</th>
+              <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Amount</th>
+              <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Money Receipt</th>
+              <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Action</th>
             </tr>
-          ))}
-          <tr>
-            <td colSpan="5" className="py-2 px-4 border border-gray-200 font-semibold text-right">Total</td>
-            <td className="py-2 px-4 border border-gray-200 font-semibold">{totalAmount}</td>
-            <td colSpan="2" className="py-2 px-4 border border-gray-200"></td>
-          </tr>
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {receives.slice(0, rowsPerPage).map((receive, index) => (
+              <tr key={receive._id}>
+                <td className="py-2 px-4 border border-gray-200">{index + 1}</td>
+                <td className="py-2 px-4 border border-gray-200">{receive.date.slice(0,10)}</td>
+                <td className="py-2 px-4 border border-gray-200">{receive._id.slice(0,7)}</td>
+                <td className="py-2 px-4 border border-gray-200">{receive.client.name}</td>
+                <td className="py-2 px-4 border border-gray-200">{receive.description}</td>
+                <td className="py-2 px-4 border border-gray-200">{receive.amount}</td>
+                <td className="py-2 px-4 border border-gray-200">{receive.moneyReceiptId}</td>
+                <td className="py-2 px-4 border border-gray-200">
+                </td>
+              </tr>
+            ))}
+            <tr>
+              <td colSpan="5" className="py-2 px-4 border border-gray-200 font-semibold text-right">Total</td>
+              <td className="py-2 px-4 border border-gray-200 font-semibold">{totalAmount}</td>
+              <td colSpan="2" className="py-2 px-4 border border-gray-200"></td>
+            </tr>
+          </tbody>
+        </table>
+      )}
 
       <div className="flex justify-between items-center mt-6 p-4">
         <span className="text-gray-700 text-sm">
           Showing 1 to {Math.min(rowsPerPage, receives.length)} of {receives.length} entries
         </span>
         <div className="flex items-center space-x-2">
-          <button className="px-4 py-2 bg-gray-400 text-black rounded-sm hover:bg-gray-700 transition-colors duration-300">
+        <button className="px-4 py-2 bg-gray-400 text-black rounded-sm hover:bg-gray-700 transition-colors duration-300">
             Previous
           </button>
           <span className="text-white bg-blue-500 border-1 p-2 font-semibold rounded-sm">1</span>

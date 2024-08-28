@@ -5,13 +5,8 @@ import FormInput from '../../../components/FormInputs/FormInput';
 import FormTextArea from '../../../components/FormInputs/FormTextArea';
 import { addAccount } from '../../../services/api';
 import { toast } from 'react-toastify';
+import { generateCustomId } from '../../../utils/CustomIDCreator';
 
-const generateCustomAccId = () => {
-    const prefix = 'ACC-';
-    const timestamp = Date.now(); 
-    const randomNumber = Math.floor(Math.random() * 1000); // Random number between 0 and 999
-    return `${prefix}${timestamp}-${randomNumber}`;
-};
 
 const AccountCreate = () => {
     const [accountNumber, setAccountNumber] = useState('');
@@ -23,7 +18,7 @@ const AccountCreate = () => {
 
     useEffect(() => {
         // Generate account number when the component mounts
-        setAccountNumber(generateCustomAccId());
+        setAccountNumber(generateCustomId('ACC-'));
     }, []);
 
     const handleSubmit = async (e) => {

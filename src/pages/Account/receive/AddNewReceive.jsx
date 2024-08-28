@@ -6,6 +6,8 @@ import FormSelect from '../../../components/FormInputs/FormSelect';
 import FormTextArea from '../../../components/FormInputs/FormTextArea';
 import { fetchClients, fetchAllAccount, fetchReceiveCategories, fetchReceiveSubCategories, createReceive } from '../../../services/api'; 
 import { toast } from 'react-toastify';
+import { generateCustomId } from '../../../utils/CustomIDCreator';
+
 
 const AddNewReceive = () => {
     const client = useFormInput('');
@@ -16,6 +18,7 @@ const AddNewReceive = () => {
     const receiveDescription = useFormInput('');
     const paymentMethod = useFormInput('');
     const date = useFormInput('', 'date');
+    const [moneyRecipt, setMoneyRecipt] = useState('');
 
     const [clients, setClients] = useState([]);
     const [accounts, setAccounts] = useState([]);
@@ -54,6 +57,8 @@ const AddNewReceive = () => {
             }
         };
 
+        setMoneyRecipt(generateCustomId("RCPT_MT"));
+
         loadClients();
         loadAccounts();
         loadCategories();
@@ -89,6 +94,7 @@ const AddNewReceive = () => {
             category: category.value,
             description: receiveDescription.value,
             paymentMethod: paymentMethod.value,
+            moneyReceiptId:moneyRecipt,
             date: date.value,
         };
         try {
@@ -122,7 +128,7 @@ const AddNewReceive = () => {
                     {...account}
                     options={[
                         { value: '', label: 'Select Account' },
-                        ...accounts.map(account => ({ value: account._id, label: account.accountTitle }))
+                        ...accounts.map(account => ({ value: account._id, label: account.title }))
                     ]}
                 />
                 <FormInput label="Amount" icon={<FaDollarSign />} {...amount} />
