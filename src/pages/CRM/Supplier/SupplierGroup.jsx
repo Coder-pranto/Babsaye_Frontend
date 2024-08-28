@@ -1,119 +1,45 @@
-// import { useState } from 'react';
-// import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
-// import Button from '../../../components/Button';
-
-// const SupplierGroup = () => {
-//   const [rowsPerPage, setRowsPerPage] = useState(10);
-
-//   const [supplierGroups, setSupplierGroups] = useState([]);
-
-//   return (
-//     <div className="mx-auto p-4 mt-10 mb-4 overflow-y-auto">
-//       {/* Header section */}
-//       <div className="flex justify-between items-center bg-[#5D5B10] p-4">
-//         <h2 className="text-2xl font-bold text-white">Supplier Group List</h2>
-//         <Button
-//           icon={<FaPlus />}
-//           text="Add New"
-//           bgColor="bg-[#5D5B10] hover:bg-[#5D5B00]"
-//           textColor="text-white border border-green-500"
-//         />
-//       </div>
-
-//       {/* Dropdown for number of rows */}
-//       <div className="flex justify-start mb-4 mt-8">
-//         <label className="mx-2 text-md font-medium text-gray-700">Show</label>
-//         <select
-//           value={rowsPerPage}
-//           onChange={(e) => setRowsPerPage(Number(e.target.value))}
-//           className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-//         >
-//           <option value={10}>10</option>
-//           <option value={25}>25</option>
-//           <option value={50}>50</option>
-//           <option value={100}>100</option>
-//         </select>
-//         <label className="ml-2 text-md font-medium text-gray-700">entries</label>
-//       </div>
-
-//       <table className="min-w-full bg-white">
-//         <thead>
-//           <tr>
-//             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">ID No</th>
-//             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Name</th>
-//             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Created At</th>
-//             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Action</th>
-//           </tr>
-//         </thead>
-//         <tbody>
-//           {supplierGroups.slice(0, rowsPerPage).map((group, index) => (
-//             <tr key={group.id}>
-//               <td className="py-2 px-4 border border-gray-200">{index + 1}</td>
-//               <td className="py-2 px-4 border border-gray-200">{group.name}</td>
-//               <td className="py-2 px-4 border border-gray-200">{group.createdAt}</td>
-//               <td className="py-2 px-4 border border-gray-200">
-//                 <button className="text-blue-500 hover:text-blue-700 mx-2">
-//                   <FaEdit />
-//                 </button>
-//                 <button className="text-red-500 hover:text-red-700 mx-2">
-//                   <FaTrash />
-//                 </button>
-//               </td>
-//             </tr>
-//           ))}
-//         </tbody>
-//       </table>
-
-//       <div className="flex justify-between items-center mt-6 p-4">
-//         <span className="text-gray-700 text-sm">
-//           Showing 1 to {Math.min(rowsPerPage, supplierGroups.length)} of {supplierGroups.length} entries
-//         </span>
-//         <div className="flex items-center space-x-2">
-//           <button className="px-4 py-2 bg-gray-400 text-black rounded-sm hover:bg-gray-700 transition-colors duration-300">
-//             Previous
-//           </button>
-//           <span className="text-white bg-blue-500 border-1 p-2 font-semibold rounded-sm">1</span>
-//           <button className="px-4 py-2 bg-gray-400 text-black rounded-sm hover:bg-gray-700 transition-colors duration-300">
-//             Next
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default SupplierGroup;
-
-
 import { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrashAlt } from 'react-icons/fa';
 import Button from '../../../components/Button';
 import { fetchSupplierGroups, addSupplierGroup, deleteSupplierGroup, updateSupplierGroup } from '../../../services/api';
 import { toast } from 'react-toastify';
 
- const SupplierGroup = () => {
+const SupplierGroup = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(50);
   const [groups, setGroups] = useState([]);
+  const [filteredGroups, setFilteredGroups] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [editGroupId, setEditGroupId] = useState(null);
 
   useEffect(() => {
     const loadGroups = async () => {
-      const response = await fetchSupplierGroups();
-      console.log(response.data)
-      setGroups(response.data);
+      try {
+        const response = await fetchSupplierGroups();
+        setGroups(response.data);
+        setFilteredGroups(response.data); // Initialize filteredGroups
+      } catch (error) {
+        console.error('Failed to fetch groups:', error.message);
+      }
     };
     loadGroups();
   }, []);
 
   const handleSearch = () => {
-    // Implement search functionality here
+    if (searchTerm.trim() === '') {
+      setFilteredGroups(groups);
+    } else {
+      const filteredData = groups.filter((data) =>
+        data.groupName.toLowerCase().trim().includes(searchTerm.toLowerCase().trim())
+      );
+      setFilteredGroups(filteredData);
+    }
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     setSearchTerm('');
+    setFilteredGroups(groups);
   };
 
   const handleAddGroup = () => {
@@ -130,9 +56,14 @@ import { toast } from 'react-toastify';
 
   const handleDeleteGroup = async (id) => {
     if (window.confirm('Are you sure you want to delete this group?')) {
-      await deleteSupplierGroup(id);
-      setGroups(groups.filter(group => group._id !== id));
-      toast.success('Group deleted successfully.');
+      try {
+        await deleteSupplierGroup(id);
+        setGroups(groups.filter(group => group._id !== id));
+        setFilteredGroups(filteredGroups.filter(group => group._id !== id)); // Update filteredGroups as well
+        toast.success('Group deleted successfully.');
+      } catch (error) {
+        console.error('Failed to delete group:', error.message);
+      }
     }
   };
 
@@ -140,7 +71,11 @@ import { toast } from 'react-toastify';
     if (editGroupId) {
       try {
         await updateSupplierGroup(editGroupId, { groupName: newGroupName });
-        setGroups(groups.map(group => group._id === editGroupId ? { ...group, groupName: newGroupName } : group));
+        const updatedGroups = groups.map(group =>
+          group._id === editGroupId ? { ...group, groupName: newGroupName } : group
+        );
+        setGroups(updatedGroups);
+        setFilteredGroups(updatedGroups); // Update filteredGroups as well
         toast.success('Group name updated successfully.');
       } catch (error) {
         console.error('Failed to update the group:', error.message);
@@ -148,7 +83,10 @@ import { toast } from 'react-toastify';
     } else {
       try {
         const response = await addSupplierGroup({ groupName: newGroupName });
-        setGroups([...groups, response.data]);
+        const newGroup = response.data;
+        const updatedGroups = [...groups, newGroup];
+        setGroups(updatedGroups);
+        setFilteredGroups(updatedGroups); // Update filteredGroups as well
         toast.success("New Group Added!");
       } catch (error) {
         console.error('Failed to add the group:', error.message);
@@ -189,6 +127,12 @@ import { toast } from 'react-toastify';
           >
             Search
           </button>
+          <button
+            onClick={handleReset}
+            className="ml-2 btn bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition duration-300"
+          >
+            Reset
+          </button>
         </div>
       </div>
 
@@ -219,8 +163,8 @@ import { toast } from 'react-toastify';
           </tr>
         </thead>
         <tbody>
-          {groups.length > 0 ? (
-            groups.slice(0, rowsPerPage).map((group) => (
+          {filteredGroups.length > 0 ? (
+            filteredGroups.slice(0, rowsPerPage).map((group) => (
               <tr key={group._id}>
                 <td className="py-2 px-4 border border-gray-200">{group._id}</td>
                 <td className="py-2 px-4 border border-gray-200">{group.groupName}</td>
@@ -248,7 +192,7 @@ import { toast } from 'react-toastify';
           ) : (
             <tr>
               <td colSpan="4" className="py-2 px-4 border border-gray-200 text-center text-sm text-gray-500">
-                No data is available for this table
+                {searchTerm ? 'No search item found' : 'No data is available for this table'}
               </td>
             </tr>
           )}
@@ -257,7 +201,7 @@ import { toast } from 'react-toastify';
 
       <div className="flex justify-between items-center mt-6 p-4">
         <span className="text-gray-700 text-sm">
-          Showing 1 to {groups.length < rowsPerPage ? groups.length : rowsPerPage} of {groups.length} entries
+          Showing {filteredGroups.length === 0 ? 0 : `1 to ${Math.min(filteredGroups.length, rowsPerPage)}`} of {filteredGroups.length} entries
         </span>
         <div className="flex items-center space-x-2">
           <button className="px-4 py-2 bg-gray-400 text-black rounded-sm hover:bg-gray-700 transition-colors duration-300">
@@ -300,7 +244,7 @@ import { toast } from 'react-toastify';
         </div>
       )}
     </div>
-  )}
- 
+  );
+}
 
-  export  default SupplierGroup;
+export default SupplierGroup;

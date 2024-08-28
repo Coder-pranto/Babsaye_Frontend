@@ -16,6 +16,7 @@ const getToken = () =>{
 
 getToken();
 
+
 // Clients API call
 export const fetchClients = () => api.get('/clients');
 
@@ -77,15 +78,43 @@ export const deleteSupplierGroup = (id) => api.delete(`/supplier-groups/${id}`);
 
 // Account api calls
 
- export const fetchAllAccount = () => api.get('/accounts');
+export const fetchAllAccount = () => api.get('/accounts');
 
- export const createAccount = (data) => api.post('/accounts', data);
+export const fetchAccountById = (id) => api.get(`/accounts/${id}`);
 
- export const fetchAccountById = (id)=> api.get(`/accounts/${id}`);
+export const addAccount = (data) => api.post('/accounts', data, {
+    headers: { 'Content-Type': 'application/json' }
+});
 
- export const updateAccount = (id, data)=> api.put(`/accounts/${id}`, data);
+export const updateAccount = (id, data) => api.put(`/accounts/${id}`, data, {
+    headers: { 'Content-Type': 'application/json' }
+});
 
- export const deleteAccount =(id) => api.delete(`/accounts/${id}`);
+export const deleteAccount = (id) => api.delete(`/accounts/${id}`);
+
+// Fetch account balance by account ID
+export const fetchAccountBalance = (accountId) => api.get(`/accounts/accbalance/${accountId}`);
+
+// Fetch account statement by account ID
+export const fetchAccountStatement = (accountId) => api.get(`/accounts/accStatement/${accountId}/statement`);
+
+
+
+
+ // Transaction API calls
+
+export const fetchAllTransactions = () => api.get('/transactions');
+
+export const fetchTransactionById = (id) => api.get(`/transactions/${id}`);
+export const addTransaction = (data) => api.post('/transactions/create', data, {
+    headers: { 'Content-Type': 'application/json' }
+});
+export const updateTransaction = (id, data) => api.put(`/transactions/${id}`, data, {
+    headers: { 'Content-Type': 'application/json' }
+});
+
+export const deleteTransaction = (id) => api.delete(`/transactions/${id}`);
+
 
 
  //Receive api calls

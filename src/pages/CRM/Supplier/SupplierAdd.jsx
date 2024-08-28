@@ -6,7 +6,7 @@ import useFormFileInput from '../../../hooks/useFormFileInput';
 import FormInput from '../../../components/FormInputs/FormInput';
 import FormSelect from '../../../components/FormInputs/FormSelect';
 import FormFileInput from '../../../components/FormInputs/FormFileInput';
-import { addSupplier, fetchSupplierGroups } from '../../../services/api'; // Adjust the path as needed
+import { addSupplier, fetchSupplierGroups } from '../../../services/api';
 import { toast } from 'react-toastify';
 
 const SupplierAdd = () => {
@@ -19,7 +19,7 @@ const SupplierAdd = () => {
     const city = useFormInput('');
     const previousDue = useFormInput('');
     const zipCode = useFormInput('');
-    const country = useFormInput('Bangladesh'); // Default country
+    const country = useFormInput('Bangladesh');
     const domain = useFormInput('');
     const bankAccount = useFormInput('');
     const group = useFormInput('');
@@ -109,8 +109,8 @@ const SupplierAdd = () => {
                 <FormSelect label="Select a Group" icon={<FaBuilding />} {...group} options={supplierGroups} />
                 <FormFileInput label="Browse" icon={<HiOutlineDocumentAdd />} onChange={handleFileChange} />
                 <FormSelect label="Status" icon={<FaUser />} {...status} options={[
-                    { label: 'Active', value: 'Active' },
-                    { label: 'Inactive', value: 'Inactive' },
+                    { label: 'Active', value: 'active' },
+                    { label: 'Inactive', value: 'inactive' },
                 ]} />
                 <button type="submit" className="col-span-3 bg-[#5D5B10] text-white py-2 mx-4 rounded">
                     Add Supplier

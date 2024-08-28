@@ -11,7 +11,6 @@ const AccountBalance = () => {
     setSearchTerm(e.target.value);
   };
 
-
   useEffect(() => {
     const fetchAccountData = async () => {
       try {
@@ -27,7 +26,7 @@ const AccountBalance = () => {
 
   const filteredAccounts = accounts.filter(
     (account) =>
-      account.accountTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      account.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       account.account.includes(searchTerm)
   );
 
@@ -87,7 +86,7 @@ const AccountBalance = () => {
           {filteredAccounts.slice(0, rowsPerPage).map((account) => (
             <tr key={account.id}>
               <td className="py-2 px-4 border border-gray-200">{account._id.slice(0, 6)}</td>
-              <td className="py-2 px-4 border border-gray-200">{account.accountTitle}</td>
+              <td className="py-2 px-4 border border-gray-200">{account.title}</td>
               <td className="py-2 px-4 border border-gray-200">{account.accountNumber}</td>
               <td className="py-2 px-4 border border-gray-200">{account.initialBalance}</td>
             </tr>

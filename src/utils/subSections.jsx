@@ -17,7 +17,7 @@ export const sections = [
                     { name: "Client Add" },
                     { name: "Client List" },
                     { name: "Client Group" },
-                    { name: "Client Statement" }
+                    // { name: "Client Statement" }
                 ]
             },
             {
@@ -26,7 +26,7 @@ export const sections = [
                     { name: "Supplier Add" },
                     { name: "Supplier List" },
                     { name: "Supplier Group" },
-                    { name: "Supplier Statement" }
+                    // { name: "Supplier Statement" }
                 ]
             }
         ]

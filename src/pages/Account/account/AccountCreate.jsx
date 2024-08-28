@@ -1,45 +1,56 @@
+import { useEffect, useState } from 'react';
 import { FaUser, FaPhone, FaDollarSign, FaList, FaBook } from 'react-icons/fa';
 import useFormInput from '../../../hooks/useFormInput';
 import FormInput from '../../../components/FormInputs/FormInput';
 import FormTextArea from '../../../components/FormInputs/FormTextArea';
-import { createAccount } from '../../../services/api';
+import { addAccount } from '../../../services/api';
 import { toast } from 'react-toastify';
 
+const generateCustomAccId = () => {
+    const prefix = 'ACC-';
+    const timestamp = Date.now(); 
+    const randomNumber = Math.floor(Math.random() * 1000); // Random number between 0 and 999
+    return `${prefix}${timestamp}-${randomNumber}`;
+};
 
 const AccountCreate = () => {
+    const [accountNumber, setAccountNumber] = useState('');
     const accountTitle = useFormInput('');
-    const initialBalance = useFormInput(0,'number');
-    const accountNumber = useFormInput('');
+    const initialBalance = useFormInput(0, 'number');
     const contactPerson = useFormInput('');
-    const phoneNumber = useFormInput('','number');
+    const phoneNumber = useFormInput('', 'number');
     const description = useFormInput('');
 
+    useEffect(() => {
+        // Generate account number when the component mounts
+        setAccountNumber(generateCustomAccId());
+    }, []);
 
-    const handleSubmit = async(e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         const formData = {
-            accountTitle: accountTitle.value,
+            title: accountTitle.value,
             initialBalance: initialBalance.value,
-            accountNumber: accountNumber.value,
+            accountNumber: accountNumber, // Use the generated account number
             contactPerson: contactPerson.value,
             phoneNumber: phoneNumber.value,
             description: description.value,
         };
 
         try {
-            const res = await createAccount(formData);
-            console.log('Create account successfully!', res.data);
-            toast.success('Create account successfully!',{
-                position:'top-right',
-                autoClose:5000,
-            })
+            const res = await addAccount(formData);
+            console.log('Account created successfully!', res.data);
+            toast.success('Account created successfully!', {
+                position: 'top-right',
+                autoClose: 5000,
+            });
         } catch (err) {
-            console.log("Failed to create account:", err.message)
-            toast.error('Failed to create account!',{
-                position:'top-right',
-                autoClose:5000,
-            })
+            console.log('Failed to create account:', err.message);
+            toast.error('Failed to create account!', {
+                position: 'top-right',
+                autoClose: 5000,
+            });
         }
     };
 
@@ -49,9 +60,9 @@ const AccountCreate = () => {
                 <span>Account Create</span>
             </div>
             <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 p-8">
+                <FormInput label="Account Number" value={accountNumber} readOnly icon={<FaBook />} />
                 <FormInput label="Account Title" icon={<FaList />} {...accountTitle} />
                 <FormInput label="Initial Balance" icon={<FaDollarSign />} {...initialBalance} />
-                <FormInput label="Account Number" icon={<FaBook />} {...accountNumber} />
                 <FormInput label="Contact Person" icon={<FaUser />} {...contactPerson} />
                 <FormInput label="Phone Number" icon={<FaPhone />} {...phoneNumber} />
                 <div className="col-span-2">
@@ -61,7 +72,6 @@ const AccountCreate = () => {
                     Add Account
                 </button>
             </form>
-
         </div>
     );
 };

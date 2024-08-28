@@ -5,25 +5,37 @@ import useFormInput from '../../../hooks/useFormInput';
 import FormInput from '../../../components/FormInputs/FormInput';
 import FormSelect from '../../../components/FormInputs/FormSelect';
 import FormFileInput from '../../../components/FormInputs/FormFileInput';
-import { addClient, fetchClientGroups } from '../../../services/api'; // Adjust the path as needed
+import { addClient, fetchClientGroups } from '../../../services/api';
 import useFormFileInput from '../../../hooks/useFormFileInput';
 import { toast } from 'react-toastify';
 
+// Function to generate a custom ID
+const generateCustomId = () => {
+  const prefix = 'CLT-';
+  const timestamp = Date.now(); // Current timestamp
+  const randomNumber = Math.floor(Math.random() * 1000); // Random number between 0 and 999
+  return `${prefix}${timestamp}-${randomNumber}`;
+};
+
 const ClientAdd = () => {
-    const idNo = useFormInput('');
+    const [idNo, setIdNo] = useState(''); 
     const clientName = useFormInput('');
     const email = useFormInput('', 'email');
     const phoneNumber = useFormInput('');
     const address = useFormInput('');
     const previousDue = useFormInput('');
+    const companyName = useFormInput(''); // New state for companyName
+    const reference = useFormInput(''); // New state for reference
     const clientGroup = useFormInput('');
     const active = useFormInput('active');
     const { file: imageFile, onChange: handleFileChange } = useFormFileInput();
 
     const [clientGroups, setClientGroups] = useState([]);
 
-    // Fetch client groups data when the component mounts
     useEffect(() => {
+        // Generate a unique ID when the component mounts
+        setIdNo(generateCustomId());
+
         const fetchGroups = async () => {
             try {
                 const res = await fetchClientGroups();
@@ -31,7 +43,6 @@ const ClientAdd = () => {
                     label: group.name,
                     value: group._id
                 })));
-                
             } catch (error) {
                 console.error('Failed to fetch client groups:', error.message);
             }
@@ -44,12 +55,14 @@ const ClientAdd = () => {
         e.preventDefault();
 
         const formData = new FormData();
-        formData.append('idNo', idNo.value);
+        formData.append('idNo', idNo); 
         formData.append('name', clientName.value);
         formData.append('phoneNumber', phoneNumber.value);
         formData.append('email', email.value);
         formData.append('address', address.value);
         formData.append('previousDue', previousDue.value);
+        formData.append('companyName', companyName.value); // Include companyName
+        formData.append('reference', reference.value); // Include reference
         formData.append('clientGroup', clientGroup.value);
         formData.append('status', active.value);
         if (imageFile) formData.append('image', imageFile);
@@ -57,17 +70,16 @@ const ClientAdd = () => {
         try {
             const response = await addClient(formData);
             console.log('Client added successfully:', response.data);
-            toast.success('Client create successfully', {
+            toast.success('Client created successfully', {
                 position: "top-right",
                 autoClose: 5000,
-                });
-            // Optionally, reset the form or provide user feedback here
+            });
         } catch (error) {
             console.error('Failed to add client:', error.message);
             toast.error('Failed to add client', {
                 position: "top-right",
                 autoClose: 5000,
-                });
+            });
         }
     };
 
@@ -77,12 +89,19 @@ const ClientAdd = () => {
                 <span>Client Create</span>
             </div>
             <form onSubmit={handleSubmit} className="grid grid-cols-3 gap-4 p-8">
-                <FormInput label="ID No" icon={<FaUser />} {...idNo} />
+                <FormInput
+                    label="ID No"
+                    icon={<FaUser />}
+                    value={idNo} // Display the generated ID
+                    readOnly // Make the field read-only
+                />
                 <FormInput label="Client Name" icon={<FaUser />} {...clientName} />
                 <FormInput label="Phone Number" icon={<FaPhone />} {...phoneNumber} />
                 <FormInput label="Email" icon={<FaEnvelope />} {...email} />
                 <FormInput label="Address" icon={<FaBuilding />} {...address} />
                 <FormInput label="Previous Due" icon={<FaBuilding />} {...previousDue} />
+                <FormInput label="Company Name" icon={<FaBuilding />} {...companyName} /> {/* New companyName input */}
+                <FormInput label="Reference" icon={<FaUser />} {...reference} /> {/* New reference input */}
                 <FormSelect 
                     label="Select Client Group" 
                     icon={<FaBuilding />} 
@@ -112,9 +131,3 @@ const ClientAdd = () => {
 };
 
 export default ClientAdd;
-
-
-
-
-
-
