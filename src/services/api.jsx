@@ -210,7 +210,7 @@ export const updateCategory = (id, data) => api.put(`/receive-categories/${id}`,
 export const deleteCategory = (id) => api.delete(`/receive-categories/${id}`);
 
 
-//receive or income sub-category API calls
+//* receive or income sub-category API calls
 
 export const fetchSubcategories = () => api.get('/receive-subcategories');
 
@@ -227,4 +227,87 @@ export const updateSubcategory = (id, data) => api.put(`/receive-subcategories/$
 export const deleteSubcategory = (id) => api.delete(`/receive-subcategories/${id}`);
 
 
+//* Products API calls
 
+export const fetchProducts = () => api.get('/products');
+
+export const fetchProductById = (id) => api.get(`/products/${id}`);
+
+export const addProduct = (formData) => api.post('/products', formData, {
+    headers: { 
+        'Content-Type': 'multipart/form-data'
+    }
+});
+
+export const updateProduct = (id, formData) => api.put(`/products/${id}`, formData, {
+    headers: { 
+        'Content-Type': 'multipart/form-data' 
+    }
+});
+
+export const deleteProduct = (id) => api.delete(`/products/${id}`);
+
+
+
+// Product Unit API calls
+export const fetchUnits = () => api.get('/products/misc/units');
+export const fetchUnitById = (id) => api.get(`/products/misc/unit/${id}`);
+export const addUnit = (data) => api.post('/products/misc/unit', data, {
+    headers: { 'Content-Type': 'application/json' }
+});
+export const updateUnit = (id, data) => api.put(`/products/misc/unit/${id}`, data, {
+    headers: { 'Content-Type': 'application/json' }
+});
+export const deleteUnit = (id) => api.delete(`/products/misc/unit/${id}`);
+
+
+
+// Product Color API calls
+export const fetchColors = () => api.get('/products/misc/colors');
+export const fetchColorById = (id) => api.get(`/products/misc/color/${id}`);
+export const addColor = (data) => api.post('/products/misc/color', data, {
+    headers: { 'Content-Type': 'application/json' }
+});
+export const updateColor = (id, data) => api.put(`/products/misc/color/${id}`, data, {
+    headers: { 'Content-Type': 'application/json' }
+});
+export const deleteColor = (id) => api.delete(`/products/misc/color/${id}`);
+
+
+
+// Product Size API calls
+export const fetchSizes = () => api.get('/products/misc/sizes');
+export const fetchSizeById = (id) => api.get(`/products/misc/size/${id}`);
+export const addSize = (data) => api.post('/products/misc/size', data, {
+    headers: { 'Content-Type': 'application/json' }
+});
+export const updateSize = (id, data) => api.put(`/products/misc/size/${id}`, data, {
+    headers: { 'Content-Type': 'application/json' }
+});
+export const deleteSize = (id) => api.delete(`/products/misc/size/${id}`);
+
+
+
+// Product Brand API calls
+export const fetchBrands = () => api.get('/products/misc/brands');
+export const fetchBrandById = (id) => api.get(`/products/misc/brand/${id}`);
+export const addBrand = (data) => api.post('/products/misc/brand', data, {
+    headers: { 'Content-Type': 'application/json' }
+});
+export const updateBrand = (id, data) => api.put(`/products/misc/brand/${id}`, data, {
+    headers: { 'Content-Type': 'application/json' }
+});
+export const deleteBrand = (id) => api.delete(`/products/misc/brand/${id}`);
+
+
+
+// Product Group API calls
+export const fetchGroups = () => api.get('/products/misc/groups');
+export const fetchGroupById = (id) => api.get(`/products/misc/group/${id}`);
+export const addGroup = (data) => api.post('/products/misc/group', data, {
+    headers: { 'Content-Type': 'application/json' }
+});
+export const updateGroup = (id, data) => api.put(`/products/misc/group/${id}`, data, {
+    headers: { 'Content-Type': 'application/json' }
+});
+export const deleteGroup = (id) => api.delete(`/products/misc/group/${id}`);
