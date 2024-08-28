@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaPlus, FaTrashAlt, FaEdit } from 'react-icons/fa';
 import Button from '../../../components/Button';
+import { fetchBrands, fetchBrandById, addBrand, updateBrand, deleteBrand } from '../../../services/api';
 
 const ProductBrand = () => {
   const [searchAll, setSearchAll] = useState('');
@@ -9,37 +10,38 @@ const ProductBrand = () => {
   const [newBrandName, setNewBrandName] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [editBrandId, setEditBrandId] = useState(null);
+  const [brands, setBrands] = useState([]);
 
-  const [brands, setBrands] = useState([
-    {
-      id: 1,
-      unit: 'Brand 1',
-      createdAt: '2024-07-29',
-    },
-    {
-      id: 2,
-      unit: 'Brand 2',
-      createdAt: '2024-07-30',
-    },
-    // Add more brand objects as needed
-  ]);
+  useEffect(() => {
+    const loadBrands = async () => {
+      try {
+        const response = await fetchBrands();
+        setBrands(response.data);
+      } catch (error) {
+        console.error("Failed to fetch brands", error);
+      }
+    };
 
-  const handleSearch = () => {
-    // Implement search functionality here
-  };
+    loadBrands();
+  }, []);
 
-  const handleAddOrEditBrand = () => {
+  const handleAddOrEditBrand = async () => {
     if (isEditing) {
-      // Edit the existing brand
-      setBrands(brands.map(brand =>
-        brand.id === editBrandId ? { ...brand, unit: newBrandName } : brand
-      ));
+      try {
+        const response = await updateBrand(editBrandId, { brandName: newBrandName });
+        setBrands(brands.map(brand => 
+          brand._id === editBrandId ? response.data : brand
+        ));
+      } catch (error) {
+        console.error("Failed to update brand", error);
+      }
     } else {
-      // Add a new brand
-      setBrands([
-        ...brands,
-        { id: brands.length + 1, unit: newBrandName, createdAt: new Date().toISOString().split('T')[0] },
-      ]);
+      try {
+        const response = await addBrand({ brandName: newBrandName });
+        setBrands([...brands, response.data]);
+      } catch (error) {
+        console.error("Failed to add brand", error);
+      }
     }
 
     setNewBrandName('');
@@ -47,20 +49,33 @@ const ProductBrand = () => {
     setIsEditing(false);
   };
 
-  const handleEdit = (id) => {
-    const brand = brands.find(brand => brand.id === id);
-    setNewBrandName(brand.unit);
-    setEditBrandId(id);
-    setIsEditing(true);
-    setIsModalOpen(true);
-  };
-
-  const handleDelete = (id) => {
-    const confirmed = window.confirm("Are you sure you want to delete this brand?");
-    if (confirmed) {
-      setBrands(brands.filter(brand => brand.id !== id));
+  const handleEdit = async (id) => {
+    try {
+      const response = await fetchBrandById(id);
+      setNewBrandName(response.data.brandName);
+      setEditBrandId(id);
+      setIsEditing(true);
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error("Failed to fetch brand", error);
     }
   };
+
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm("Are you sure you want to delete this brand?");
+    if (confirmed) {
+      try {
+        await deleteBrand(id);
+        setBrands(brands.filter(brand => brand._id !== id));
+      } catch (error) {
+        console.error("Failed to delete brand", error);
+      }
+    }
+  };
+
+  // const handleSearch = () => {
+    
+  // };
 
   return (
     <div className="mx-auto p-4 mt-10 mb-4 overflow-y-auto">
@@ -122,22 +137,22 @@ const ProductBrand = () => {
         <tbody>
           {brands.slice(0, rowsPerPage).map((brand) => (
             <tr key={brand.id}>
-              <td className="py-2 px-4 border border-gray-200">{brand.id}</td>
-              <td className="py-2 px-4 border border-gray-200">{brand.unit}</td>
-              <td className="py-2 px-4 border border-gray-200">{brand.createdAt}</td>
+              <td className="py-2 px-4 border border-gray-200">{brand._id}</td>
+              <td className="py-2 px-4 border border-gray-200">{brand.brandName}</td>
+              <td className="py-2 px-4 border border-gray-200">{brand.createdAt.slice(0,10)}</td>
               <td className="py-2 px-4 border border-gray-200">
                 <div className="flex space-x-2">
                   <button
                     type="button"
                     className="text-blue-500 hover:text-blue-700"
-                    onClick={() => handleEdit(brand.id)}
+                    onClick={() => handleEdit(brand._id)}
                   >
                     <FaEdit />
                   </button>
                   <button
                     type="button"
                     className="text-red-500 hover:text-red-700"
-                    onClick={() => handleDelete(brand.id)}
+                    onClick={() => handleDelete(brand._id)}
                   >
                     <FaTrashAlt />
                   </button>

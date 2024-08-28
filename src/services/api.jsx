@@ -193,7 +193,7 @@ export const deleteExpenseSubCategory = (id) => api.delete(`/expense-subcategori
 
 
 
-//receive or income category API calls
+//* receive or income category API calls
 
 export const fetchCategories = () => api.get('/receive-categories');
 
@@ -249,7 +249,7 @@ export const deleteProduct = (id) => api.delete(`/products/${id}`);
 
 
 
-// Product Unit API calls
+//* Product Unit API calls
 export const fetchUnits = () => api.get('/products/misc/units');
 export const fetchUnitById = (id) => api.get(`/products/misc/unit/${id}`);
 export const addUnit = (data) => api.post('/products/misc/unit', data, {
@@ -262,7 +262,7 @@ export const deleteUnit = (id) => api.delete(`/products/misc/unit/${id}`);
 
 
 
-// Product Color API calls
+//* Product Color API calls
 export const fetchColors = () => api.get('/products/misc/colors');
 export const fetchColorById = (id) => api.get(`/products/misc/color/${id}`);
 export const addColor = (data) => api.post('/products/misc/color', data, {
@@ -275,7 +275,7 @@ export const deleteColor = (id) => api.delete(`/products/misc/color/${id}`);
 
 
 
-// Product Size API calls
+//* Product Size API calls
 export const fetchSizes = () => api.get('/products/misc/sizes');
 export const fetchSizeById = (id) => api.get(`/products/misc/size/${id}`);
 export const addSize = (data) => api.post('/products/misc/size', data, {
@@ -288,7 +288,7 @@ export const deleteSize = (id) => api.delete(`/products/misc/size/${id}`);
 
 
 
-// Product Brand API calls
+//* Product Brand API calls
 export const fetchBrands = () => api.get('/products/misc/brands');
 export const fetchBrandById = (id) => api.get(`/products/misc/brand/${id}`);
 export const addBrand = (data) => api.post('/products/misc/brand', data, {
@@ -301,7 +301,7 @@ export const deleteBrand = (id) => api.delete(`/products/misc/brand/${id}`);
 
 
 
-// Product Group API calls
+//* Product Group API calls
 export const fetchGroups = () => api.get('/products/misc/groups');
 export const fetchGroupById = (id) => api.get(`/products/misc/group/${id}`);
 export const addGroup = (data) => api.post('/products/misc/group', data, {

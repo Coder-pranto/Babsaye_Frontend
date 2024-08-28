@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaPlus, FaTrashAlt, FaEdit } from 'react-icons/fa';
 import Button from '../../../components/Button';
+import { fetchColors, addColor, updateColor, deleteColor } from '../../../services/api';
+import { toast } from 'react-toastify';
 
 const ProductColor = () => {
   const [searchAll, setSearchAll] = useState('');
@@ -9,44 +11,70 @@ const ProductColor = () => {
   const [newColorName, setNewColorName] = useState('');
   const [editMode, setEditMode] = useState(false);
   const [editingColorId, setEditingColorId] = useState(null);
+  const [colors, setColors] = useState([]);
 
-  const [colors, setColors] = useState([
-    {
-      id: 1,
-      color: 'Red',
-      createdAt: '2024-07-29',
-    },
-    {
-      id: 2,
-      color: 'Blue',
-      createdAt: '2024-07-30',
-    },
-    // Add more color objects as needed
-  ]);
+
+  const loadColors = async () => {
+    try {
+      const response = await fetchColors();
+      setColors(response.data);
+    } catch (error) {
+      console.error('Failed to fetch colors', error.message);
+    }
+  };
+
+  useEffect(() => {
+    loadColors();
+  }, []);
 
   const handleSearch = () => {
     // Implement search functionality here
   };
 
-  const handleAddOrEditColor = () => {
+  const handleAddOrEditColor = async () => {
     if (editMode) {
-      setColors(colors.map(color => 
-        color.id === editingColorId ? { ...color, color: newColorName } : color
-      ));
-      setEditMode(false);
-      setEditingColorId(null);
+      try {
+        await updateColor(editingColorId, { colorName: newColorName });
+        setColors(colors.map(color =>
+          color.id === editingColorId ? { ...color, colorName: newColorName } : color
+        ));
+        setEditMode(false);
+        setEditingColorId(null);
+        loadColors();
+        toast.success("Product color is updated.")
+      } catch (error) {
+        console.error('Failed to update color', error.message);
+        toast.error('Failed to update color');
+      }
     } else {
-      setColors([
-        ...colors,
-        { id: colors.length + 1, color: newColorName, createdAt: new Date().toISOString().split('T')[0] },
-      ]);
+      try {
+        const response = await addColor({ colorName: newColorName });
+        setColors([...colors, response.data]);
+        loadColors();
+        toast.success("Product color is added.")
+      } catch (error) {
+        console.error('Failed to add color', error.message);
+        toast.error('Failed to add color');
+      }
     }
     setNewColorName('');
     setIsModalOpen(false);
   };
 
-  const handleDeleteColor = (id) => {
-    setColors(colors.filter(color => color.id !== id));
+  const handleDeleteColor = async (id) => {
+
+    const confirmed = window.confirm("Are you sure you want to delete this color?");
+    if(confirmed){
+      try {
+        await deleteColor(id);
+        setColors(colors.filter(color => color.id !== id));
+        loadColors();
+        toast.success("Product color is deleted.");
+      } catch (error) {
+        console.error('Failed to delete color', error.message);
+        toast.error('Failed to delete color');
+      }
+    }
   };
 
   const handleEditColor = (id, currentColor) => {
@@ -115,23 +143,23 @@ const ProductColor = () => {
         </thead>
         <tbody>
           {colors.slice(0, rowsPerPage).map((color) => (
-            <tr key={color.id}>
-              <td className="py-2 px-4 border border-gray-200">{color.id}</td>
-              <td className="py-2 px-4 border border-gray-200">{color.color}</td>
-              <td className="py-2 px-4 border border-gray-200">{color.createdAt}</td>
+            <tr key={color._id}>
+              <td className="py-2 px-4 border border-gray-200">{color._id}</td>
+              <td className="py-2 px-4 border border-gray-200">{color.colorName}</td>
+              <td className="py-2 px-4 border border-gray-200">{color.createdAt.slice(0, 10)}</td>
               <td className="py-2 px-4 border border-gray-200">
                 <div className="flex space-x-2">
                   <button 
                     type="button" 
                     className="text-blue-500 hover:text-blue-700"
-                    onClick={() => handleEditColor(color.id, color.color)}
+                    onClick={() => handleEditColor(color._id, color.colorName)}
                   >
                     <FaEdit />
                   </button>
                   <button 
                     type="button" 
                     className="text-red-500 hover:text-red-700"
-                    onClick={() => handleDeleteColor(color.id)}
+                    onClick={() => handleDeleteColor(color._id, color.colorName)}
                   >
                     <FaTrashAlt />
                   </button>

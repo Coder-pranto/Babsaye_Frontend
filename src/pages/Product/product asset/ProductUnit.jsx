@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaPlus, FaTrashAlt, FaEdit } from 'react-icons/fa';
 import Button from '../../../components/Button';
+import { fetchUnits, fetchUnitById, addUnit, updateUnit, deleteUnit } from '../../../services/api';
+import { toast } from 'react-toastify';
 
 const ProductUnit = () => {
   const [searchAll, setSearchAll] = useState('');
@@ -9,52 +11,73 @@ const ProductUnit = () => {
   const [newUnitName, setNewUnitName] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [editUnitId, setEditUnitId] = useState(null);
+  const [units, setUnits] = useState([]);
 
-  const [units, setUnits] = useState([
-    {
-      id: 1,
-      unit: 'Unit 1',
-      createdAt: '2024-07-29',
-    },
-    {
-      id: 2,
-      unit: 'Unit 2',
-      createdAt: '2024-07-30',
-    },
-    // Add more unit objects as needed
-  ]);
 
-  const handleSearch = () => {
-    // Implement search functionality here
-  };
-
-  const handleAddUnit = () => {
-    if (isEditing) {
-      setUnits(units.map(unit => 
-        unit.id === editUnitId ? { ...unit, unit: newUnitName } : unit
-      ));
-      setIsEditing(false);
-      setEditUnitId(null);
-    } else {
-      setUnits([
-        ...units,
-        { id: units.length + 1, unit: newUnitName, createdAt: new Date().toISOString().split('T')[0] },
-      ]);
+  const loadUnits = async () => {
+    try {
+      const response = await fetchUnits();
+      setUnits(response.data);
+    } catch (error) {
+      console.error("Error fetching units:", error.message);
     }
-    setNewUnitName('');
-    setIsModalOpen(false);
   };
 
-  const handleEdit = (id) => {
-    const unitToEdit = units.find(unit => unit.id === id);
-    setNewUnitName(unitToEdit.unit);
-    setIsEditing(true);
-    setEditUnitId(id);
-    setIsModalOpen(true);
+  useEffect(() => {
+    loadUnits();
+  }, []);
+
+  const handleAddUnit = async () => {
+    try {
+      if (isEditing) {
+        await updateUnit(editUnitId, { unitName: newUnitName });
+        setUnits(units.map(unit => 
+          unit.id === editUnitId ? { ...unit, unitName: newUnitName } : unit
+        ));
+        setIsEditing(false);
+        setEditUnitId(null);
+        loadUnits();
+        toast.success("Unit updated successfully!");
+      } else {
+        const response = await addUnit({ unitName: newUnitName });
+        setUnits([...units, { ...response.data, id: response.data.id }]);
+      }
+      setNewUnitName('');
+      setIsModalOpen(false);
+      toast.success("Unit created successfully!");
+    } catch (error) {
+      console.error("Error adding/updating unit:", error.message);
+      toast.error("Error adding/updating unit!");
+    }
   };
 
-  const handleDelete = (id) => {
-    setUnits(units.filter(unit => unit.id !== id));
+  const handleEdit = async (id) => {
+    try {
+      const response = await fetchUnitById(id);
+      const unitToEdit = response.data;
+      setNewUnitName(unitToEdit.unitName);
+      setIsEditing(true);
+      setEditUnitId(id);
+      setIsModalOpen(true);
+      toast.success("Unit update successfully!");
+    } catch (error) {
+      console.error("Error fetching unit details:", error.message);
+      toast.error("Error fetching unit details");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm("Are you sure you want to delete this brand?");
+    if (confirmed) {
+      try {
+        await deleteUnit(id);
+        setUnits(units.filter(unit => unit._id !== id));
+        toast.success("Unit deleted successfully!");
+      } catch (error) {
+        console.error("Error deleting unit:", error.message);
+        toast.error("Error deleting unit")
+      }
+    }
   };
 
   return (
@@ -113,15 +136,15 @@ const ProductUnit = () => {
         <tbody>
           {units.slice(0, rowsPerPage).map((unit) => (
             <tr key={unit.id}>
-              <td className="py-2 px-4 border border-gray-200">{unit.id}</td>
-              <td className="py-2 px-4 border border-gray-200">{unit.unit}</td>
-              <td className="py-2 px-4 border border-gray-200">{unit.createdAt}</td>
+              <td className="py-2 px-4 border border-gray-200">{unit._id}</td>
+              <td className="py-2 px-4 border border-gray-200">{unit.unitName}</td>
+              <td className="py-2 px-4 border border-gray-200">{unit.createdAt.slice(0,10)}</td>
               <td className="py-2 px-4 border border-gray-200">
                 <div className="flex space-x-2">
-                  <button type="button" className="text-blue-500 hover:text-blue-700" onClick={() => handleEdit(unit.id)}>
+                  <button type="button" className="text-blue-500 hover:text-blue-700" onClick={() => handleEdit(unit._id)}>
                     <FaEdit />
                   </button>
-                  <button type="button" className="text-red-500 hover:text-red-700" onClick={() => handleDelete(unit.id)}>
+                  <button type="button" className="text-red-500 hover:text-red-700" onClick={() => handleDelete(unit._id)}>
                     <FaTrashAlt />
                   </button>
                 </div>
@@ -131,54 +154,44 @@ const ProductUnit = () => {
         </tbody>
       </table>
 
-      <div className="flex justify-between items-center mt-6 p-4">
-        <span className="text-gray-700 text-sm">
-          Showing 1 to {Math.min(rowsPerPage, units.length)} of {units.length} entries
-        </span>
-        <div className="flex items-center space-x-2">
-          <button className="px-4 py-2 bg-gray-400 text-black rounded-sm hover:bg-gray-700 transition-colors duration-300">
-            Previous
-          </button>
-          <span className="text-white bg-blue-500 border-1 p-2 font-semibold rounded-sm">1</span>
-          <button className="px-4 py-2 bg-gray-400 text-black rounded-sm hover:bg-gray-700 transition-colors duration-300">
-            Next
-          </button>
-        </div>
+      <div className="flex justify-between items-center p-4 bg-white">
+        <p className="text-md font-medium text-gray-700">Showing 1 to {Math.min(rowsPerPage, units.length)} of {units.length} entries</p>
       </div>
 
-      {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-md">
-            <h3 className="text-xl font-semibold mb-4">{isEditing ? 'Edit Unit' : 'Add New Unit'}</h3>
-            <input
-              type="text"
-              value={newUnitName}
-              placeholder="Unit Name"
-              onChange={(e) => setNewUnitName(e.target.value)}
-              className="input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-4"
-            />
-            <div className="flex justify-end space-x-4">
-              <Button
-                text="Cancel"
-                bgColor="bg-red-500 hover:bg-red-700"
-                textColor="text-white"
-                onClick={() => {
-                  setIsModalOpen(false);
-                  setIsEditing(false);
-                  setNewUnitName('');
-                }}
-              />
-              <Button
-                text={isEditing ? 'Update Unit' : 'Add Unit'}
-                bgColor="bg-green-500 hover:bg-green-700"
-                textColor="text-white"
-                onClick={handleAddUnit}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div className="bg-white p-6 rounded-md">
+      <h3 className="text-xl font-semibold mb-4">{isEditing ? "Edit Unit" : "Add New Unit"}</h3>
+      <input
+        type="text"
+        value={newUnitName}
+        placeholder="Enter Unit Name"
+        onChange={(e) => setNewUnitName(e.target.value)}
+        className="input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-4"
+      />
+      <div className="flex justify-end space-x-4">
+        <Button
+          text="Cancel"
+          bgColor="bg-red-500 hover:bg-red-700"
+          textColor="text-white"
+          onClick={() => {
+            setIsModalOpen(false);
+            setIsEditing(false);
+            setEditUnitId(null);
+            setNewUnitName('');
+          }}
+        />
+        <Button
+          text={isEditing ? "Save Changes" : "Add Unit"}
+          bgColor="bg-green-500 hover:bg-green-700"
+          textColor="text-white"
+          onClick={handleAddUnit}
+        />
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
