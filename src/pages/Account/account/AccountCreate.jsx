@@ -27,7 +27,7 @@ const AccountCreate = () => {
         const formData = {
             title: accountTitle.value,
             initialBalance: initialBalance.value,
-            accountNumber: accountNumber, // Use the generated account number
+            accountNumber: accountNumber, 
             contactPerson: contactPerson.value,
             phoneNumber: phoneNumber.value,
             description: description.value,

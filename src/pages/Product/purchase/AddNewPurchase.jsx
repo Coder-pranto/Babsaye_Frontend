@@ -6,32 +6,70 @@ import FormInput from '../../../components/FormInputs/FormInput';
 import Button from '../../../components/Button';
 import FormSelect from '../../../components/FormInputs/FormSelect';
 
+import { addPurchase, fetchProducts } from '../../../services/api';
+import { fetchSuppliers } from '../../../services/api';
+import { toast } from 'react-toastify';
+import { generateCustomId  } from '../../../utils/CustomIDCreator';
+
+
+
+
 const AddNewPurchase = () => {
-    const invoiceId = useFormInput('');
+    const [invoiceId, setInvoiceId] = useState("");
     const date = useFormInput('', 'date');
     const discountRate = useFormInput(0, 'number');
     const discountType = useFormInput('flat');
     const paymentAmount = useFormInput(0, 'number');
     const transportFare = useFormInput(0, 'number');
     const [products, setProducts] = useState([]);
+    const [productOptions, setProductOptions] = useState([]);
+    const [supplierOptions, setSupplierOptions] = useState([]);
+
+    const [selectedProduct, setSelectedProduct] = useState("");
+    const [selectedSupplier, setSelectedSupplier] = useState("");
 
     const [billAmount, setBillAmount] = useState(0);
-    const [vat, setVat] = useState(0);
+    const [vat, setVat] = useState(12);
     const [grandTotal, setGrandTotal] = useState(0);
     const [dueAmount, setDueAmount] = useState(0);
 
-    const productOptions = [
-        { id: 1, name: 'Biscuits', price: 150, stock: 10 },
-        { id: 2, name: 'Chocolate', price: 250, stock: 10 },
-        { id: 3, name: 'Cake', price: 120, stock: 10 },
-        { id: 4, name: 'Choco Biscuits', price: 350, stock: 10 },
-    ];
 
-    const supplierOptions = [
-        { id: 1, name: 'Supplier A' },
-        { id: 2, name: 'Supplier B' },
-        { id: 3, name: 'Supplier C' },
-    ];
+    const fetchFunc = async () => {
+        try {
+            const [productResponse, supplierResponse] = await Promise.all([
+                fetchProducts(),
+                fetchSuppliers()
+            ]);
+
+            const productOptions = productResponse.data.map(product => ({
+                id: product._id,
+                name: product.productName,
+                price: product.buyingPrice,
+                stock: product.openingStock
+            }));
+
+            const supplierOptions = supplierResponse.data.map(supplier => ({
+                id: supplier._id,
+                name: supplier.supplierName
+            }));
+
+            return { productOptions, supplierOptions };
+        } catch (error) {
+            console.error('Failed to fetch products or suppliers:', error.message);
+        }
+    };
+
+    useEffect(() => {
+        setInvoiceId(generateCustomId('INVOICE-333'));
+        const fetchData = async () => {
+            const { productOptions, supplierOptions } = await fetchFunc();
+            setProductOptions(productOptions);
+            setSupplierOptions(supplierOptions);
+        };
+        fetchData();
+    }, []);
+
+
 
     useEffect(() => {
         const totalBill = products.reduce((total, product) => total + (product.price * product.quantity), 0);
@@ -59,8 +97,36 @@ const AddNewPurchase = () => {
         // Save as draft logic
     };
 
-    const handleAddPurchase = () => {
-        // Add purchase logic
+
+    const handleAddPurchase = async (e) => {
+        e.preventDefault(); 
+
+        const purchaseData = {
+            invoiceId: invoiceId,
+            date: date.value,
+            supplier: supplierOptions.find((s) => s.supplierName === supplierOptions.value)?.id,
+            products: products.map(product => ({
+                product: product.id,
+                quantity: product.quantity,
+                price: product.price,
+            })),
+            discountRate: discountRate.value,
+            discountType: discountType.value,
+            paymentAmount: paymentAmount.value,
+            transportFare: transportFare.value,
+            vat,
+            grandTotal,
+            dueAmount,
+        };
+        console.log(purchaseData);
+        try {
+            const response = await addPurchase(purchaseData);
+            console.log(response.data);
+            toast.success('Purchase created successfully');
+        } catch (error) {
+            console.error('Failed to add purchase:', error.message);
+            toast.error('Failed to add purchase. Please try again.');
+        }
     };
 
     return (
@@ -70,7 +136,7 @@ const AddNewPurchase = () => {
             </div>
             <form className="p-8">
                 <div className="grid grid-cols-2 gap-4">
-                    <FormInput label="Invoice ID No" {...invoiceId} icon={<FaDollarSign />} />
+                    <FormInput label="Invoice ID No" value={invoiceId} readOnly icon={<FaDollarSign />} />
                     <FormInput label="Date" {...date} icon={<SlCalender />} />
                     <FormSelect
                         label="Select Product"
@@ -161,31 +227,26 @@ const AddNewPurchase = () => {
                                 <td className="py-2 px-4 border border-gray-200">{transportFare.value}</td>
                             </tr>
                             <tr>
-                                <td className="py-2 px-4 border border-gray-200 font-semibold">Discount</td>
-                                <td className="py-2 px-4 border border-gray-200">
-                                    {discountType.value === 'flat' ? discountRate.value : `${discountRate.value}%`}
-                                </td>
-                            </tr>
-                            <tr>
                                 <td className="py-2 px-4 border border-gray-200 font-semibold">Grand Total</td>
                                 <td className="py-2 px-4 border border-gray-200">{grandTotal}</td>
                             </tr>
                             <tr>
-                                <td className="py-2 px-4 border border-gray-200 font-semibold">Payment</td>
-                                <td className="py-2 px-4 border border-gray-200">{paymentAmount.value}</td>
-                            </tr>
-                            <tr>
-                                <td className="py-2 px-4 border border-gray-200 font-semibold">Total Due</td>
+                                <td className="py-2 px-4 border border-gray-200 font-semibold">Due</td>
                                 <td className="py-2 px-4 border border-gray-200">{dueAmount}</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <div className="flex justify-between">
-                    <Button text="Cancel" bgColor="bg-red-500" textColor="text-white" />
-                    <Button text="Save As Draft" bgColor="bg-[#5D5B10]" textColor="text-white" onClick={handleSaveAsDraft} />
-                    <Button text="Add Purchase" bgColor="bg-[#5D5B10]" textColor="text-white" onClick={handleAddPurchase} />
+                <div className="flex justify-end mt-4">
+                    <Button
+                        text="Add Purchase"
+                        onClick={handleAddPurchase}
+                        bgColor="bg-blue-500 hover:bg-blue-700"
+                        textColor="text-white"
+                        icon={<FaDollarSign />}
+                    />
+
                 </div>
             </form>
         </div>
@@ -193,3 +254,9 @@ const AddNewPurchase = () => {
 };
 
 export default AddNewPurchase;
+
+
+
+
+
+

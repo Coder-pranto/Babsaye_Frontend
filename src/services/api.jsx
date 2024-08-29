@@ -311,3 +311,13 @@ export const updateGroup = (id, data) => api.put(`/products/misc/group/${id}`, d
     headers: { 'Content-Type': 'application/json' }
 });
 export const deleteGroup = (id) => api.delete(`/products/misc/group/${id}`);
+
+
+//* Purchases API calls
+
+
+export const fetchPurchases = () => api.get('/products/purchases');
+export const fetchPurchaseById = (id) => api.get(`/products/purchases/${id}`);
+export const addPurchase = (purchaseData) => api.post('/products/purchases', purchaseData);
+export const updatePurchase = (id, purchaseData) => api.put(`/products/purchases/${id}`, purchaseData);
+export const deletePurchase = (id) => api.delete(`/products/purchases/${id}`);
