@@ -1,43 +1,57 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaPlus, FaTrashAlt, FaEdit } from 'react-icons/fa';
 import Button from '../../../components/Button';
+import { fetchProducts, deleteProduct, BASE_URL } from '../../../services/api'; 
 
 const ProductList = () => {
   const [searchAll, setSearchAll] = useState('');
   const [searchClientGroup, setSearchClientGroup] = useState('');
   const [searchDate, setSearchDate] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [products, setProducts] = useState([]);
 
-  const [products, setProducts] = useState([
-    {
-      id: 1,
-      details: 'Product 1 details',
-      unit: 'Piece',
-      asset: 'Asset 1',
-      image: 'image1.jpg',
-      openingStock: 100,
-      createdAt: '2024-07-29',
-    },
-    {
-      id: 2,
-      details: 'Product 2 details',
-      unit: 'Piece',
-      asset: 'Asset 2',
-      image: 'image2.jpg',
-      openingStock: 50,
-      createdAt: '2024-07-30',
-    },
-    // Add more product objects as needed
-  ]);
+
+  const loadData = async () => {
+    try {
+      const { data } = await fetchProducts();
+      setProducts(data);
+    } catch (error) {
+      console.error('There was an error fetching the products!', error.message);
+    }
+  };
+
+  // Load products when the component mounts
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const handleSearch = () => {
     // Implement search functionality here
   };
+  
 
+  const handleEdit = (id)=>{
+    console.log(id);
+  }
+
+  // Function to reset the search filters
   const handleReset = () => {
     setSearchAll('');
     setSearchClientGroup('');
     setSearchDate('');
+  };
+
+
+  // Function to handle product deletion
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      try {
+        await deleteProduct(id);
+        setProducts(products.filter((product) => product._id !== id));
+      } catch (error) {
+        console.error('There was an error deleting the product!', error.message);
+      }
+    }
   };
 
   return (
@@ -115,33 +129,35 @@ const ProductList = () => {
         <thead>
           <tr>
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">ID No</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Product Details</th>
+            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Product Name</th>
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Unit</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Asset</th>
+            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Brand</th>
+            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Group</th>
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Image</th>
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Opening Stock</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Created At</th>
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Action</th>
           </tr>
         </thead>
         <tbody>
-          {products.slice(0, rowsPerPage).map((product) => (
-            <tr key={product.id}>
-              <td className="py-2 px-4 border border-gray-200">{product.id}</td>
-              <td className="py-2 px-4 border border-gray-200">{product.details}</td>
-              <td className="py-2 px-4 border border-gray-200">{product.unit}</td>
-              <td className="py-2 px-4 border border-gray-200">{product.asset}</td>
-              <td className="py-2 px-4 border border-gray-200"><img src={product.image} alt={product.details} className="w-16 h-16 object-cover"/></td>
-              <td className="py-2 px-4 border border-gray-200">{product.openingStock}</td>
-              <td className="py-2 px-4 border border-gray-200">{product.createdAt}</td>
-              <td className="py-2 px-4 border border-gray-200 ">
-                <div className="flex space-x-2">
-                <button type="button" className="text-blue-500 hover:text-blue-700">
-                  <FaEdit />
-                </button>
-                <button type="button" className="text-red-500 hover:text-red-700">
-                  <FaTrashAlt />
-                </button>
+          {products?.slice(0, rowsPerPage).map((product) => (
+            <tr key={product._id}>
+              <td className="py-2 px-4 border border-gray-200">{product._id}</td>
+              <td className="py-2 px-4 border border-gray-200">{product.productName}</td>
+              <td className="py-2 px-4 border border-gray-200">{product.unit.unitName}</td>
+              <td className="py-2 px-4 border border-gray-200">{product.productBrand.brandName}</td>
+              <td className="py-2 px-4 border border-gray-200">{product.productGroup.groupName}</td>
+              <td className="py-2 px-4 border border-gray-200">
+                <img src={`${BASE_URL}/${product.productImage}`} alt={product.productImage} className="w-16 h-16 object-cover mx-auto" />
+              </td>
+              <td className="py-2 px-4 border border-gray-200 text-center">{product.openingStock}</td>
+              <td className="py-2 px-4 border border-gray-200">
+                <div className="flex space-x-2 text-center">
+                  <button type="button" className="text-blue-500 hover:text-blue-700" onClick={() => handleEdit(product._id)}>
+                    <FaEdit />
+                  </button>
+                  <button type="button" className="text-red-500 hover:text-red-700" onClick={() => handleDelete(product._id)}>
+                    <FaTrashAlt />
+                  </button>
                 </div>
               </td>
             </tr>
@@ -157,7 +173,7 @@ const ProductList = () => {
           <button className="px-4 py-2 bg-gray-400 text-black rounded-sm hover:bg-gray-700 transition-colors duration-300">
             Previous
           </button>
-          <span className="text-white bg-blue-500 border-1 p-2 font-semibold rounded-sm">1</span>
+          <span className="text-sm text-gray-700">1</span>
           <button className="px-4 py-2 bg-gray-400 text-black rounded-sm hover:bg-gray-700 transition-colors duration-300">
             Next
           </button>

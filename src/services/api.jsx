@@ -1,8 +1,8 @@
 import axios from "axios";
 
-// export const BASE_URL = 'http://localhost:5005/api/v1';
+export const BASE_URL = 'http://localhost:5005/api/v1';
 // export const BASE_URL = 'http://pos.tailormaster.xyz/api/v1';
-export const BASE_URL = 'https://babsaye-backend.onrender.com/api/v1';
+// export const BASE_URL = 'https://babsaye-backend.onrender.com/api/v1';
 
 
 const api = axios.create({
@@ -239,7 +239,7 @@ export const addProduct = (formData) => api.post('/products', formData, {
     }
 });
 
-export const updateProduct = (id, formData) => api.put(`/products/${id}`, formData, {
+export const updateProduct = (id, formData) => api.patch(`/products/${id}`, formData, {
     headers: { 
         'Content-Type': 'multipart/form-data' 
     }
