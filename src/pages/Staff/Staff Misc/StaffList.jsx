@@ -1,36 +1,31 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FaPlus, FaTrashAlt, FaEdit } from 'react-icons/fa';
 import Button from '../../../components/Button';
+import { fetchStaff, updateStaff, deleteStaff, BASE_URL } from '../../../services/api';
+import { toast } from 'react-toastify';
 
 const StaffList = () => {
   const [searchAll, setSearchAll] = useState('');
   const [searchRole, setSearchRole] = useState('');
   const [searchDate, setSearchDate] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [staff, setStaff] = useState([]);
+  const [roles, setRoles] = useState([]);
 
-  const [staff, setStaff] = useState([
-    {
-      id: 1,
-      name: 'John Doe',
-      phoneNumber: '123456789',
-      email: 'john.doe@example.com',
-      image: 'image1.jpg',
-      roles: 'Manager',
-      permissions: 'Full Access',
-      createdAt: '2024-07-29',
-    },
-    {
-      id: 2,
-      name: 'Jane Smith',
-      phoneNumber: '987654321',
-      email: 'jane.smith@example.com',
-      image: 'image2.jpg',
-      roles: 'Assistant',
-      permissions: 'Limited Access',
-      createdAt: '2024-07-30',
-    },
-    // Add more staff objects as needed
-  ]);
+  const loadData = async () => {
+    try {
+      const staffData = await fetchStaff();
+      setStaff(staffData.data);
+      setRoles(['Admin', 'User', 'Manager']);
+    } catch (error) {
+      console.error('Error fetching staff or roles:', error);
+    }
+  };
+
+  useEffect(() => {
+
+    loadData();
+  }, []);
 
   const handleSearch = () => {
     // Implement search functionality here
@@ -40,6 +35,35 @@ const StaffList = () => {
     setSearchAll('');
     setSearchRole('');
     setSearchDate('');
+  };
+
+  // Handle Role Update
+  const handleRoleChange = async (id, newRole) => {
+    try {
+      const updatedStaff = await updateStaff(id, { role: newRole });
+      setStaff((prevStaff) =>
+        prevStaff.map((member) =>
+          member.id === id ? { ...member, role: updatedStaff.data.role } : member
+        )
+      );
+      loadData();
+      toast.success("Staff role changed.")
+    } catch (error) {
+      console.error('Error updating role:', error.message);
+      toast.error( 'Error updating role.' )
+    }
+  };
+
+  // Handle Delete
+  const handleDelete = async (id) => {
+    try {
+      await deleteStaff(id);
+      setStaff((prevStaff) => prevStaff.filter((member) => member._id !== id));
+      toast.success("Staff Deleted Successfully.")
+    } catch (error) {
+      console.error('Error deleting staff:', error.message);
+      toast.error( 'Error deleting role.' )
+    }
   };
 
   return (
@@ -57,6 +81,7 @@ const StaffList = () => {
 
       {/* Filter Portion */}
       <div className="grid grid-cols-4 gap-2 mb-4">
+        {/* Implement search and filter inputs */}
         <div className="p-4">
           <label className="block text-lg font-medium text-gray-700 mb-2">Search All</label>
           <input
@@ -127,47 +152,54 @@ const StaffList = () => {
           </tr>
         </thead>
         <tbody>
-          {staff.slice(0, rowsPerPage).map((member) => (
-            <tr key={member.id}>
-              <td className="py-2 px-4 border border-gray-200">{member.id}</td>
+          {staff.slice(0, rowsPerPage).map((member, idx) => (
+            <tr key={member._id}>
+              <td className="py-2 px-4 border border-gray-200">{idx + 1}</td>
               <td className="py-2 px-4 border border-gray-200">{member.name}</td>
-              <td className="py-2 px-4 border border-gray-200">{member.phoneNumber}</td>
+              <td className="py-2 px-4 border border-gray-200">{member.phone}</td>
               <td className="py-2 px-4 border border-gray-200">{member.email}</td>
-              <td className="py-2 px-4 border border-gray-200"><img src={member.image} alt={member.name} className="w-16 h-16 object-cover"/></td>
-              <td className="py-2 px-4 border border-gray-200">{member.roles}</td>
-              <td className="py-2 px-4 border border-gray-200">{member.permissions}</td>
-              <td className="py-2 px-4 border border-gray-200">{member.createdAt}</td>
-              <td className="py-2 px-4 border border-gray-200 ">
+              <td className="py-2 px-4 border border-gray-200">
+                <img src={`${BASE_URL}/${member.image}`} alt={member.name} className="w-16 h-16 object-cover" />
+              </td>
+              <td className="py-2 px-4 border border-gray-200">
+                <select
+                  value={member.role}
+                  onChange={(e) => handleRoleChange(member._id, e.target.value)}
+                  className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {roles.map((role, idx) => (
+                    <option key={idx} value={role}>
+                      {role}
+                    </option>
+                  ))}
+                </select>
+              </td>
+              <td className="py-2 px-4 border border-gray-200">
+                {member.permissions.length > 0 ? member.permissions.join(', ') : <span className='font-bold text-red-600'>Not assigned</span>}
+              </td> 
+              <td className="py-2 px-4 border border-gray-200">{new Date(member.createdAt).toLocaleDateString()}</td>
+              <td className="py-2 px-4 border border-gray-200">
                 <div className="flex space-x-2">
-                  <button type="button" className="text-blue-500 hover:text-blue-700">
+                  <button
+                    type="button"
+                    className="text-blue-500 hover:text-blue-700"
+                    onClick={() => console.log(`Edit ${member.id}`)}
+                  >
                     <FaEdit />
                   </button>
-                  <button type="button" className="text-red-500 hover:text-red-700">
-                    <FaTrashAlt />
+                  <button
+                    type="button"
+                    className="text-red-500 hover:text-red-700" onClick={() => handleDelete(member._id)} > <FaTrashAlt />
                   </button>
                 </div>
               </td>
-            </tr>
-          ))}
+            </tr>))}
         </tbody>
-      </table>
-
-      <div className="flex justify-between items-center mt-6 p-4">
-        <span className="text-gray-700 text-sm">
-          Showing 1 to {Math.min(rowsPerPage, staff.length)} of {staff.length} entries
-        </span>
-        <div className="flex items-center space-x-2">
-          <button className="px-4 py-2 bg-gray-400 text-black rounded-sm hover:bg-gray-700 transition-colors duration-300">
-            Previous
-          </button>
-          <span className="text-white bg-blue-500 border-1 p-2 font-semibold rounded-sm">1</span>
-          <button className="px-4 py-2 bg-gray-400 text-black rounded-sm hover:bg-gray-700 transition-colors duration-300">
-            Next
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+      </table> 
+              </div>
+            );
 };
 
 export default StaffList;
+
+

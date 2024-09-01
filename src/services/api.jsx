@@ -130,6 +130,9 @@ export const updateReceive = (id, data) => api.put(`/receives/${id}`, data);
 
 export const deleteReceive = (id) => api.delete(`/receives/${id}`);
 
+
+
+
 //* Receive category API calls
 export const fetchReceiveCategories = () => api.get('/receive-categories');
 
@@ -314,10 +317,56 @@ export const deleteGroup = (id) => api.delete(`/products/misc/group/${id}`);
 
 
 //* Purchases API calls
-
-
 export const fetchPurchases = () => api.get('/products/purchases');
 export const fetchPurchaseById = (id) => api.get(`/products/purchases/${id}`);
 export const addPurchase = (purchaseData) => api.post('/products/purchases', purchaseData);
 export const updatePurchase = (id, purchaseData) => api.put(`/products/purchases/${id}`, purchaseData);
 export const deletePurchase = (id) => api.delete(`/products/purchases/${id}`);
+
+
+
+//* Staff API calls
+export const fetchStaff = () => api.get('/staff');
+export const fetchStaffById = (id) => api.get(`/staff/${id}`);
+export const addStaff = (staffData) => api.post('/staff', staffData, {
+    headers: { 
+        'Content-Type': 'multipart/form-data' 
+    }
+});
+export const updateStaff = (id, staffData) => api.put(`/staff/${id}`, staffData);
+export const deleteStaff = (id) => api.delete(`/staff/${id}`);
+
+
+//* Staff Department API calls
+export const fetchDepartments = () => api.get('/staff-department');
+export const fetchDepartmentById = (id) => api.get(`/staff-department/${id}`);
+export const addDepartment = (departmentData) => api.post('/staff-department', departmentData);
+export const updateDepartment = (id, departmentData) => api.put(`/staff-department/${id}`, departmentData);
+export const deleteDepartment = (id) => api.delete(`/staff-department/${id}`);
+
+
+//* Staff Designation API calls
+export const fetchDesignations = () => api.get('/staff-designation');
+export const fetchDesignationById = (id) => api.get(`/staff-designation/${id}`);
+export const addDesignation = (designationData) => api.post('/staff-designation', designationData);
+export const updateDesignation = (id, designationData) => api.put(`/staff-designation/${id}`, designationData);
+export const deleteDesignation = (id) => api.delete(`/staff-designation/${id}`);
+
+
+//* Staff Payment API calls
+export const fetchStaffPayments = () => api.get('/staff-payments');
+export const fetchStaffPaymentById = (id) => api.get(`/staff-payments/${id}`);
+export const addStaffPayment = (staffPaymentData) => api.post('/staff-payments', staffPaymentData);
+export const updateStaffPayment = (id, staffPaymentData) => api.put(`/staff-payments/${id}`, staffPaymentData);
+export const deleteStaffPayment = (id) => api.delete(`/staff-payments/${id}`);
+
+
+
+//* Staff Salary API calls
+export const fetchStaffSalaries = () => api.get('/staff-salaries');
+export const fetchStaffSalariesByStaffId = (staffId) => api.get(`/staff-salaries/staff/${staffId}`);
+export const fetchSalaryById = (id) => api.get(`/staff-salaries/${id}`);
+export const createOrUpdateSalary = (salaryData) => api.post('/staff-salaries', salaryData);
+export const updateSalaryStatus = (id, data) => api.put(`/staff-salaries/${id}/status`, data);
+export const deleteSalary = (id) => api.delete(`/staff-salaries/${id}`);
+export const fetchSalariesByMonthAndYear = (month, year) => api.get(`/staff-salaries/${month}/${year}`);

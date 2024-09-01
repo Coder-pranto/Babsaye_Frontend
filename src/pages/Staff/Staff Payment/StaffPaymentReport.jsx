@@ -1,37 +1,42 @@
-import { useState } from 'react';
-import { FaSearch, FaPrint, FaTrashAlt, FaEdit } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import {  FaPrint, FaTrashAlt, FaEdit, FaPlus } from 'react-icons/fa';
 import Button from '../../../components/Button';
+import { fetchStaffPayments, deleteStaffPayment} from '../../../services/api';
+import { toast } from 'react-toastify';
 
 const StaffPaymentReport = () => {
   const [searchClient, setSearchClient] = useState('');
   const [searchDate, setSearchDate] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [payments, setPayments] = useState([]);
 
-  const [payments, setPayments] = useState([
-    {
-      id: 1,
-      date: '2024-07-29',
-      clientId: '123',
-      category: 'Salary',
-      account: '123456',
-      chequeNo: '7890',
-      description: 'Monthly Salary',
-      transactionType: 'Credit',
-      amount: '5000',
-    },
-    {
-      id: 2,
-      date: '2024-07-30',
-      clientId: '456',
-      category: 'Bonus',
-      account: '654321',
-      chequeNo: '1234',
-      description: 'Performance Bonus',
-      transactionType: 'Credit',
-      amount: '1000',
-    },
-    // Add more payment objects as needed
-  ]);
+  const monthsMap = {
+    '01': 'January',
+    '02': 'February',
+    '03': 'March',
+    '04': 'April',
+    '05': 'May',
+    '06': 'June',
+    '07': 'July',
+    '08': 'August',
+    '09': 'September',
+    '10': 'October',
+    '11': 'November',
+    '12': 'December',
+};
+
+
+  useEffect(() => {
+    const loadPayments = async () => {
+      try {
+        const response = await fetchStaffPayments();
+        setPayments(response.data);
+      } catch (error) {
+        console.error('Failed to fetch payments', error);
+      }
+    };
+    loadPayments();
+  }, []);
 
   const handleSearch = () => {
     // Implement search functionality here
@@ -42,17 +47,29 @@ const StaffPaymentReport = () => {
     setSearchDate('');
   };
 
+  const handleDelete = async (id) => {
+    try {
+      await deleteStaffPayment(id);
+      setPayments(payments.filter(payment => payment._id !== id));
+      toast.success('Payment deleted successfully!');
+    } catch (error) {
+      console.error('Failed to delete payment', error);
+      toast.error('Failed to delete payment');
+    }
+  };
+
   return (
     <div className="mx-auto p-4 mt-10 mb-4 overflow-y-auto">
       {/* Header section */}
       <div className="flex justify-between items-center bg-[#5D5B10] p-4">
         <h2 className="text-2xl font-bold text-white">Staff Payment Report</h2>
         <Button
-          icon={<FaSearch />}
-          text="Search"
+          icon={<FaPlus />}
+          text="Add New"
           bgColor="bg-[#5D5B10] hover:bg-[#5D5B00]"
           textColor="text-white border border-green-500"
           onClick={handleSearch}
+          to='/staff_payment_create'
         />
       </div>
 
@@ -108,11 +125,12 @@ const StaffPaymentReport = () => {
           <tr>
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">SL</th>
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Date</th>
+            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Month | Year</th>
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">ID No</th>
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Category</th>
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Account</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Cheque No</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Description</th>
+            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Transaction ID</th>
+            {/* <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Description</th> */}
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Transaction Type</th>
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Amount</th>
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Printable</th>
@@ -121,27 +139,34 @@ const StaffPaymentReport = () => {
         </thead>
         <tbody>
           {payments.slice(0, rowsPerPage).map((payment, index) => (
-            <tr key={payment.id}>
+            <tr key={payment._id}>
               <td className="py-2 px-4 border border-gray-200">{index + 1}</td>
-              <td className="py-2 px-4 border border-gray-200">{payment.date}</td>
+              <td className="py-2 px-4 border border-gray-200">{payment.createdAt.slice(0,10)}</td>
+              <td className="py-2 px-4 border border-gray-200">
+                {monthsMap[(payment.month)]} | {payment.year.toString()}
+              </td>
               <td className="py-2 px-4 border border-gray-200">{payment.clientId}</td>
-              <td className="py-2 px-4 border border-gray-200">{payment.category}</td>
-              <td className="py-2 px-4 border border-gray-200">{payment.account}</td>
-              <td className="py-2 px-4 border border-gray-200">{payment.chequeNo}</td>
-              <td className="py-2 px-4 border border-gray-200">{payment.description}</td>
+              <td className="py-2 px-4 border border-gray-200">{payment.category.name}</td>
+              <td className="py-2 px-4 border border-gray-200">{payment.account.title}</td>
+              <td className="py-2 px-4 border border-gray-200">{payment.transactionId}</td>
+              {/* <td className="py-2 px-4 border border-gray-200">{payment.description}</td> */}
               <td className="py-2 px-4 border border-gray-200">{payment.transactionType}</td>
               <td className="py-2 px-4 border border-gray-200">{payment.amount}</td>
-              <td className="py-2 px-4 border border-gray-200">
+              <td className="py-2 px-4 border border-gray-200 text-center">
                 <button type="button" className="text-green-500 hover:text-green-700">
                   <FaPrint />
                 </button>
               </td>
               <td className="py-2 px-4 border border-gray-200">
-                <div className="flex space-x-2">
-                  <button type="button" className="text-blue-500 hover:text-blue-700">
+                <div className="flex justify-center space-x-2">
+                  {/* <button type="button" className="text-blue-500 hover:text-blue-700">
                     <FaEdit />
-                  </button>
-                  <button type="button" className="text-red-500 hover:text-red-700">
+                  </button> */}
+                  <button
+                    type="button"
+                    className="text-red-500 hover:text-red-700"
+                    onClick={() => handleDelete(payment._id)}
+                  >
                     <FaTrashAlt />
                   </button>
                 </div>
