@@ -370,3 +370,22 @@ export const createOrUpdateSalary = (salaryData) => api.post('/staff-salaries', 
 export const updateSalaryStatus = (id, data) => api.put(`/staff-salaries/${id}/status`, data);
 export const deleteSalary = (id) => api.delete(`/staff-salaries/${id}`);
 export const fetchSalariesByMonthAndYear = (month, year) => api.get(`/staff-salaries/${month}/${year}`);
+
+
+
+
+//* Attendance API calls
+
+export const createAttendance = (attendanceData) => api.post('/attendance', attendanceData);
+
+export const getAttendanceByDate = (date) => api.get('/attendance/date', { params: { date } });
+
+export const getStaffsByMonthAndYear = (month, year) => api.get('/attendance/monthly', { params: { month, year } });
+
+export const getAttendanceByStaff = (staffId, startDate, endDate) => api.get(`/attendance/staff/${staffId}`, { params: { startDate, endDate } });
+
+export const getMonthlyAttendance = (staffId, month, year) => api.get(`/attendance/staff/${staffId}/monthly`, { params: { month, year } });
+
+export const updateAttendance = (id, updateData) => api.put(`/attendance/${id}`, updateData);
+
+export const deleteAttendance = (id) => api.delete(`/attendance/${id}`);
