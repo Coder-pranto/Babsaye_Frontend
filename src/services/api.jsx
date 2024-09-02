@@ -382,9 +382,11 @@ export const getAttendanceByDate = (date) => api.get('/attendance/date', { param
 
 export const getStaffsByMonthAndYear = (month, year) => api.get('/attendance/monthly', { params: { month, year } });
 
+export const getMonthlyAttendance = (staffId, month, year) => api.get(`/attendance/staff/${staffId}/monthly`, { params: { month, year } });
+
+
 export const getAttendanceByStaff = (staffId, startDate, endDate) => api.get(`/attendance/staff/${staffId}`, { params: { startDate, endDate } });
 
-export const getMonthlyAttendance = (staffId, month, year) => api.get(`/attendance/staff/${staffId}/monthly`, { params: { month, year } });
 
 export const updateAttendance = (id, updateData) => api.put(`/attendance/${id}`, updateData);
 

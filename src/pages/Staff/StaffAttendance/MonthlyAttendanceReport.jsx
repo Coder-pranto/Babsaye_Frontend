@@ -1,67 +1,61 @@
-import  { useState } from 'react';
-import { dummyAttendanceData } from './dummyData'; 
+import { useState, useEffect } from 'react';
 import { FaCheckCircle, FaExclamationCircle, FaTimesCircle, FaCalendarAlt } from 'react-icons/fa';
-const MonthlyAttendanceReport = () => {
-  const staffOptions = [
-    { id: 1, name: "Md. Shamsul Alam Sajib", phoneNumber: "01537570379" },
-    // Add more staff options as needed
-  ];
+import { fetchStaff, getMonthlyAttendance } from '../../../services/api'; 
 
-  const [selectedStaff, setSelectedStaff] = useState(staffOptions[0]);
-  const [month, setMonth] = useState(new Date().getMonth()); // 0-indexed month
+const MonthlyAttendanceReport = () => {
+  const [staffOptions, setStaffOptions] = useState([]);
+  const [selectedStaff, setSelectedStaff] = useState(null);
+  const [month, setMonth] = useState(new Date().getMonth() + 1); 
   const [year, setYear] = useState(new Date().getFullYear());
   const [attendanceRecords, setAttendanceRecords] = useState([]);
+  const [totals, setTotals] = useState({ totalPresent: 0, totalLate: 0, totalAbsent: 0, totalLeave: 0 });
 
-  const handleSearch = () => {
-    const filteredData = dummyAttendanceData.find(
-      (data) =>
-        data.staffId === selectedStaff.id &&
-        data.year === year &&
-        data.month === month
-    );
+  useEffect(() => {
+    const fetchStaffOptions = async () => {
+      try {
+        const response = await fetchStaff(); 
+        setStaffOptions(response.data);
+        setSelectedStaff(response.data[0]);
+      } catch (error) {
+        console.error('Error fetching staff options:', error.message);
+      }
+    };
 
-    if (filteredData) {
-      setAttendanceRecords(filteredData.attendance);
-    } else {
+    fetchStaffOptions();
+  }, []);
+
+  const handleSearch = async () => {
+    if (!selectedStaff) return;
+
+    try {
+      const response = await getMonthlyAttendance(selectedStaff._id, month, year);
+      setAttendanceRecords(response.data.attendanceRecords);
+      setTotals(response.data.totals);
+    } catch (error) {
+      console.error('Error fetching attendance data:', error.message);
       setAttendanceRecords([]);
+      setTotals({ totalPresent: 0, totalLate: 0, totalAbsent: 0, totalLeave: 0 });
     }
   };
 
   const handleReset = () => {
     setSelectedStaff(staffOptions[0]);
-    setMonth(new Date().getMonth());
+    setMonth(new Date().getMonth() + 1);
     setYear(new Date().getFullYear());
     setAttendanceRecords([]);
+    setTotals({ totalPresent: 0, totalLate: 0, totalAbsent: 0, totalLeave: 0 });
   };
-
-  const calculateTotals = () => {
-    let totalPresent = 0;
-    let totalLate = 0;
-    let totalAbsent = 0;
-    let totalLeave = 0;
-
-    attendanceRecords.forEach((record) => {
-      if (record.status === "Present") totalPresent++;
-      if (record.status === "Late") totalLate++;
-      if (record.status === "Absent") totalAbsent++;
-      if (record.status === "Leave") totalLeave++;
-    });
-
-    return { totalPresent, totalLate, totalAbsent, totalLeave };
-  };
-
-  const { totalPresent, totalLate, totalAbsent, totalLeave } = calculateTotals();
 
   return (
     <div className="p-6 bg-white shadow-md rounded-md">
       <div className="flex justify-between mb-4">
         <select
           className="border-2 border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-          value={selectedStaff.name}
-          onChange={(e) => setSelectedStaff(staffOptions.find(staff => staff.name === e.target.value))}
+          value={selectedStaff?._id || ''}
+          onChange={(e) => setSelectedStaff(staffOptions.find(staff => staff._id === e.target.value))}
         >
           {staffOptions.map((staff) => (
-            <option key={staff.id} value={staff.name}>
+            <option key={staff._id} value={staff._id}>
               {staff.name}
             </option>
           ))}
@@ -72,29 +66,27 @@ const MonthlyAttendanceReport = () => {
           value={month}
           onChange={(e) => setMonth(parseInt(e.target.value))}
         >
-          <option value={0}>January</option>
-          <option value={1}>February</option>
-          <option value={2}>March</option>
-          <option value={3}>April</option>
-          <option value={4}>May</option>
-          <option value={5}>June</option>
-          <option value={6}>July</option>
-          <option value={7}>August</option>
-          <option value={8}>September</option>
-          <option value={9}>October</option>
-          <option value={10}>November</option>
-          <option value={11}>December</option>
+          <option value={1}>January</option>
+          <option value={2}>February</option>
+          <option value={3}>March</option>
+          <option value={4}>April</option>
+          <option value={5}>May</option>
+          <option value={6}>June</option>
+          <option value={7}>July</option>
+          <option value={8}>August</option>
+          <option value={9}>September</option>
+          <option value={10}>October</option>
+          <option value={11}>November</option>
+          <option value={12}>December</option>
         </select>
 
-        <div>
-          <input
-            type="number"
-            placeholder="YYYY"
-            className="border-2 border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-            value={year}
-            onChange={(e) => setYear(parseInt(e.target.value))}
-          />
-        </div>
+        <input
+          type="number"
+          placeholder="YYYY"
+          className="border-2 border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+          value={year}
+          onChange={(e) => setYear(parseInt(e.target.value))}
+        />
 
         <button
           className="bg-primary text-white p-2 rounded hover:bg-green-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -111,9 +103,9 @@ const MonthlyAttendanceReport = () => {
       </div>
 
       <div className="text-center mb-4">
-        <h2 className="text-lg font-bold">{selectedStaff.name}</h2>
-        <p>{selectedStaff.phoneNumber}</p>
-        <p className="text-gray-500">Salary Report</p>
+        <h2 className="text-lg font-bold">{selectedStaff?.name}</h2>
+        <p>{selectedStaff?.phone}</p>
+        <p className="text-gray-500">Attendance Report</p>
       </div>
 
       <table className="w-full table-auto border-collapse border border-gray-300 mb-4">
@@ -131,20 +123,19 @@ const MonthlyAttendanceReport = () => {
             attendanceRecords.map((record, index) => (
               <tr key={index}>
                 <td className="border border-gray-300 p-2 text-center">{index + 1}</td>
-                <td className="border border-gray-300 p-2 text-center">{record.date}</td>
+                <td className="border border-gray-300 p-2 text-center">{record.date.slice(0,10)}</td>
                 <td className="border border-gray-300 p-2 text-center">{record.inTime}</td>
                 <td className="border border-gray-300 p-2 text-center">{record.outTime}</td>
                 <td
-                    className={`border border-gray-300 p-2 text-center ${record.status === "Present" ? "bg-green-200" :
-                            record.status === "Late" ? "bg-yellow-200" :
-                                record.status === "Absent" ? "bg-red-200" :
-                                    record.status === "Leave" ? "bg-blue-200" :
-                                        ""
-                        }`}
+                  className={`border border-gray-300 p-2 text-center ${record.status === "Present" ? "bg-green-200" :
+                    record.status === "Late" ? "bg-yellow-200" :
+                      record.status === "Absent" ? "bg-red-200" :
+                        record.status === "Leave" ? "bg-blue-200" :
+                          ""
+                    }`}
                 >
-                    {record.status}
+                  {record.status}
                 </td>
-
               </tr>
             ))
           ) : (
@@ -157,42 +148,37 @@ const MonthlyAttendanceReport = () => {
         </tbody>
       </table>
 
+      <div className="flex justify-between mb-4 p-4 bg-gray-100 rounded-lg shadow-sm">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center space-x-2">
+            <div className="bg-green-200 p-2 rounded-full">
+              <FaCheckCircle className="w-5 h-5 text-green-700" />
+            </div>
+            <p className="text-lg font-semibold text-gray-700">Total Present: {totals.Present}</p>
+          </div>
 
-{/* calculation start */}
-<div className="flex justify-between mb-4 p-4 bg-gray-100 rounded-lg shadow-sm">
-  <div className="grid grid-cols-2 gap-4">
-    <div className="flex items-center space-x-2">
-      <div className="bg-green-200 p-2 rounded-full">
-        <FaCheckCircle className="w-5 h-5 text-green-700" />
+          <div className="flex items-center space-x-2">
+            <div className="bg-yellow-200 p-2 rounded-full">
+              <FaExclamationCircle className="w-5 h-5 text-yellow-700" />
+            </div>
+            <p className="text-lg font-semibold text-gray-700">Total Late: {totals.Late}</p>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <div className="bg-red-200 p-2 rounded-full">
+              <FaTimesCircle className="w-5 h-5 text-red-700" />
+            </div>
+            <p className="text-lg font-semibold text-gray-700">Total Absence: {totals.Absent}</p>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <div className="bg-blue-200 p-2 rounded-full">
+              <FaCalendarAlt className="w-5 h-5 text-blue-700" />
+            </div>
+            <p className="text-lg font-semibold text-gray-700">Total Leave: {totals.Leave}</p>
+          </div>
+        </div>
       </div>
-      <p className="text-lg font-semibold text-gray-700">Total Present: {totalPresent}</p>
-    </div>
-
-    <div className="flex items-center space-x-2">
-      <div className="bg-yellow-200 p-2 rounded-full">
-        <FaExclamationCircle className="w-5 h-5 text-yellow-700" />
-      </div>
-      <p className="text-lg font-semibold text-gray-700">Total Late: {totalLate}</p>
-    </div>
-
-    <div className="flex items-center space-x-2">
-      <div className="bg-red-200 p-2 rounded-full">
-        <FaTimesCircle className="w-5 h-5 text-red-700" />
-      </div>
-      <p className="text-lg font-semibold text-gray-700">Total Absence: {totalAbsent}</p>
-    </div>
-
-    <div className="flex items-center space-x-2">
-      <div className="bg-blue-200 p-2 rounded-full">
-        <FaCalendarAlt className="w-5 h-5 text-blue-700" />
-      </div>
-      <p className="text-lg font-semibold text-gray-700">Total Leave: {totalLeave}</p>
-    </div>
-  </div>
-</div>
-
-{/* calculation end */}
-
     </div>
   );
 };
