@@ -1,15 +1,36 @@
-
 import { useNavigate } from 'react-router-dom';
 
 export const useLogout = () => {
   const navigate = useNavigate();
 
   const logout = () => {
-    // Clear user-related data from local storage or cookies
-    localStorage.removeItem('user_token');
-    
+    localStorage.removeItem('userInfo');
     navigate('/login');
   };
 
   return logout;
 };
+
+
+// import { useNavigate } from 'react-router-dom';
+// import { signOut } from 'firebase/auth';
+// import { auth } from '../services/firebaseConfig';
+// import { toast } from 'react-toastify';
+
+// const Logout = () => {
+//   const navigate = useNavigate();
+
+//   const handleLogout = async () => {
+//     try {
+//       await signOut(auth);
+//       toast.success('Logged out successfully');
+//       navigate('/login');
+//     } catch (error) {
+//       toast.error('Error logging out');
+//     }
+//   };
+
+//   return handleLogout;
+// };
+
+// export default Logout;

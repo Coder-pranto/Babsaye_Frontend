@@ -78,7 +78,7 @@ export const sections = [
                 subSubCategories: [
                     { name: "Add New Invoice" },
                     { name: "Invoice List" },
-                    { name: "Draft Invoice" },
+                    // { name: "Draft Invoice" },
                 ]
 
             },

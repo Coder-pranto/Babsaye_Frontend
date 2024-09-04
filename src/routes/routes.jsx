@@ -2,7 +2,7 @@ import { Navigate, createBrowserRouter } from "react-router-dom";
 // import ProtectedRoute from './ProtectedRoute';
 import InitialLayout from "../layouts/InitialLayout";
 import ErrorPage from "../pages/ErrorPage";
-import Login from "../pages/Login";
+import Login from "../pages/User/Login";
 import Dashboard from "../pages/Dashboard";
 import ClientAdd from "../pages/CRM/Client/ClientAdd";
 import ClientList from "../pages/CRM/Client/ClientList";
@@ -74,6 +74,7 @@ import MyProfile from "../pages/Profile/MyProfile";
 import ChangePassword from "../pages/Profile/ChangePassword";
 import Role from "../pages/Profile/RoleManagement";
 import CompanyInformation from "../pages/Profile/CompanyInformation";
+import Register from "../pages/User/Register";
 
 
 const dummyUser = {
@@ -385,6 +386,10 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
+  },
+  {
+    path: "/register",
+    element: <Register />,
   },
 ]);
 

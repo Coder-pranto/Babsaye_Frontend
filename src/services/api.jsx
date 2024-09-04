@@ -233,21 +233,17 @@ export const deleteSubcategory = (id) => api.delete(`/receive-subcategories/${id
 //* Products API calls
 
 export const fetchProducts = () => api.get('/products');
-
 export const fetchProductById = (id) => api.get(`/products/${id}`);
-
 export const addProduct = (formData) => api.post('/products', formData, {
     headers: { 
         'Content-Type': 'multipart/form-data'
     }
 });
-
 export const updateProduct = (id, formData) => api.patch(`/products/${id}`, formData, {
     headers: { 
         'Content-Type': 'multipart/form-data' 
     }
 });
-
 export const deleteProduct = (id) => api.delete(`/products/${id}`);
 
 
@@ -391,3 +387,26 @@ export const getAttendanceByStaff = (staffId, startDate, endDate) => api.get(`/a
 export const updateAttendance = (id, updateData) => api.put(`/attendance/${id}`, updateData);
 
 export const deleteAttendance = (id) => api.delete(`/attendance/${id}`);
+
+
+//* SMS Api calls 
+export const userDocumentUpload = (data)=> api.post('/documents/upload',data, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+
+
+
+  //* Invoice Api calls
+
+  export const createInvoice = (invoiceData) => api.post('/invoices', invoiceData);
+  export const getInvoices = () => api.get('/invoices');
+  export const getInvoiceById = (id) => api.get(`/invoices/${id}`);
+  export const updateInvoice = (id, updateData) => api.put(`/invoices/${id}`, updateData);
+  export const deleteInvoice = (id) => api.delete(`/invoices/${id}`);
+  
+
+  export const getPDF = (id)=> api.get(`/printable/invoice/${id}/print`,{
+    responseType: 'blob', // Important to handle binary data
+  })

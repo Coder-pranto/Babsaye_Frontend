@@ -1,41 +1,30 @@
-import { useState } from 'react';
-import { FaPlus } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import { FaPlus, FaPrint, FaTrash } from 'react-icons/fa';
 import Button from '../../components/Button';
+import { createInvoice, getInvoices, updateInvoice, deleteInvoice, getPDF } from '../../services/api';
 
 const InvoiceList = () => {
   const [searchClient, setSearchClient] = useState('');
   const [searchAccount, setSearchAccount] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const [invoices, setInvoices] = useState([
-    {
-      id: 1,
-      client: 'John Doe',
-      invoiceId: 'INV-001',
-      category: 'Electronics',
-      returnQuantity: 0,
-      billAmount: 2000,
-      discount: 100,
-      receiveAmount: 1900,
-      dueAmount: 100,
-      createdAt: '2024-07-29',
-      type: 'Sale',
-    },
-    {
-      id: 2,
-      client: 'Jane Smith',
-      invoiceId: 'INV-002',
-      category: 'Office Supplies',
-      returnQuantity: 2,
-      billAmount: 1500,
-      discount: 0,
-      receiveAmount: 1500,
-      dueAmount: 0,
-      createdAt: '2024-07-30',
-      type: 'Sale',
-    },
-    // Add more invoice objects as needed
-  ]);
+  useEffect(() => {
+    fetchInvoices();
+  }, []);
+
+  const fetchInvoices = async () => {
+    setLoading(true);
+    try {
+      const response = await getInvoices();
+      setInvoices(response.data);
+    } catch (error) {
+      console.error('Error fetching invoices:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSearch = () => {
     // Implement search functionality here
@@ -46,11 +35,54 @@ const InvoiceList = () => {
     setSearchAccount('');
   };
 
+  const handleDelete = async (id) => {
+    try {
+      await deleteInvoice(id);
+      fetchInvoices();
+    } catch (error) {
+      console.error('Error deleting invoice:', error.message);
+    }
+  };
+
+  const handleCreateInvoice = async (newInvoiceData) => {
+    try {
+      await createInvoice(newInvoiceData);
+      fetchInvoices();
+    } catch (error) {
+      console.error('Error creating invoice:', error);
+    }
+  };
+
+  const handleUpdateInvoice = async (id, updatedData) => {
+    try {
+      await updateInvoice(id, updatedData);
+      fetchInvoices();
+    } catch (error) {
+      console.error('Error updating invoice:', error);
+    }
+  };
+
   // Calculate totals
   const totalBillAmount = invoices.reduce((acc, curr) => acc + curr.billAmount, 0);
-  const totalDiscount = invoices.reduce((acc, curr) => acc + curr.discount, 0);
+  // const totalDiscount = invoices.reduce((acc, curr) => acc + curr.discount, 0);
   const totalReceiveAmount = invoices.reduce((acc, curr) => acc + curr.receiveAmount, 0);
   const totalDueAmount = invoices.reduce((acc, curr) => acc + curr.dueAmount, 0);
+
+
+  const handlePrintInvoice = async (invoiceId) => {
+    try {
+      const response = await getPDF(invoiceId);
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `invoice-${invoiceId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+    } catch (error) {
+      console.error('Error printing invoice:', error.message);
+    }
+  };
 
   return (
     <div className="mx-auto p-4 mt-10 mb-4 overflow-y-auto">
@@ -62,6 +94,7 @@ const InvoiceList = () => {
           text="Add New"
           bgColor="bg-[#5D5B10] hover:bg-[#5D5B00]"
           textColor="text-white border border-green-500"
+         to='/add_new_invoice'
         />
       </div>
 
@@ -120,63 +153,69 @@ const InvoiceList = () => {
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Client</th>
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Invoice ID No</th>
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Category</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Return Quantity</th>
+            {/* <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Return Quantity</th> */}
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Bill Amount</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Discount</th>
+            {/* <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Discount</th> */}
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Receive Amount</th>
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Due Amount</th>
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Created At</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Type</th>
+            {/* <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Type</th> */}
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Printable</th>
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Action</th>
           </tr>
         </thead>
         <tbody>
-          {invoices.slice(0, rowsPerPage).map((invoice, index) => (
-            <tr key={invoice.id}>
-              <td className="py-2 px-4 border border-gray-200">{index + 1}</td>
-              <td className="py-2 px-4 border border-gray-200">{invoice.client}</td>
-              <td className="py-2 px-4 border border-gray-200">{invoice.invoiceId}</td>
-              <td className="py-2 px-4 border border-gray-200">{invoice.category}</td>
-              <td className="py-2 px-4 border border-gray-200">{invoice.returnQuantity}</td>
-              <td className="py-2 px-4 border border-gray-200">{invoice.billAmount}</td>
-              <td className="py-2 px-4 border border-gray-200">{invoice.discount}</td>
-              <td className="py-2 px-4 border border-gray-200">{invoice.receiveAmount}</td>
-              <td className="py-2 px-4 border border-gray-200">{invoice.dueAmount}</td>
-              <td className="py-2 px-4 border border-gray-200">{invoice.createdAt}</td>
-              <td className="py-2 px-4 border border-gray-200">{invoice.type}</td>
-              <td className="py-2 px-4 border border-gray-200">Printable</td>
-              <td className="py-2 px-4 border border-gray-200">Action</td>
+          {loading ? (
+            <tr>
+              <td colSpan="13" className="text-center py-4">Loading...</td>
             </tr>
-          ))}
-          {/* Totals Row */}
-          <tr className="font-semibold">
-            <td colSpan="5" className="py-2 px-4 border border-gray-200 text-left">Total</td>
-            <td className="py-2 px-4 border border-gray-200">{totalBillAmount}</td>
-            <td className="py-2 px-4 border border-gray-200">{totalDiscount}</td>
-            <td className="py-2 px-4 border border-gray-200">{totalReceiveAmount}</td>
-            <td className="py-2 px-4 border border-gray-200">{totalDueAmount}</td>
-            <td colSpan="4" className="py-2 px-4 border border-gray-200"></td>
-          </tr>
-        </tbody>
-      </table>
+          ) : (
+            invoices.slice(0, rowsPerPage).map((invoice, index) => (
+              <tr key={invoice.id}>
+                <td className="py-2 px-4 border border-gray-200">{index + 1}</td>
+                <td className="py-2 px-4 border border-gray-200">{invoice.client.name}</td>
+                <td className="py-2 px-4 border border-gray-200">INV-{invoice._id}</td>
+                <td className="py-2 px-4 border border-gray-200">{invoice.category.name}</td>
+                {/* <td className="py-2 px-4 border border-gray-200">{invoice.returnQuantity || 0}</td> */}
+                <td className="py-2 px-4 border border-gray-200">{invoice.billAmount}</td>
+                {/* <td className="py-2 px-4 border border-gray-200">{invoice.discount}</td> */}
+                <td className="py-2 px-4 border border-gray-200">{invoice.receiveAmount}</td>
+                <td className="py-2 px-4 border border-gray-200">{invoice.dueAmount}</td>
+                <td className="py-2 px-4 border border-gray-200">{invoice.createdAt}</td>
+                {/* <td className="py-2 px-4 border border-gray-200">{invoice.type}</td> */}
+                <td className="py-2 px-4 border border-gray-200 text-center">
+                  <Button
+                  icon={<FaPrint />}
+                  text="Printable"
+                  bgColor="bg-blue-500"
+                  textColor="text-white"
+                  onClick={() => handlePrintInvoice(invoice._id)}
+                  />
+                </td>
+                <td className="py-2 px-4 border border-gray-200">
+                  <Button
+                    icon={<FaTrash />}
+                    text="Delete"
+                    bgColor="bg-red-500"
+                    textColor="text-white"
+                    onClick={() => handleDelete(invoice._id)}
+                  />
 
-      <div className="flex justify-between items-center mt-6 p-4">
-        <span className="text-gray-700 text-sm">
-          Showing 1 to {Math.min(rowsPerPage, invoices.length)} of {invoices.length} entries
-        </span>
-        <div className="flex items-center space-x-2">
-          <button className="px-4 py-2 bg-gray-400 text-black rounded-sm hover:bg-gray-700 transition-colors duration-300">
-            Previous
-          </button>
-          <span className="text-white bg-blue-500 border-1 p-2 font-semibold rounded-sm">1</span>
-          <button className="px-4 py-2 bg-gray-400 text-black rounded-sm hover:bg-gray-700 transition-colors duration-300">
-            Next
-          </button>
+                </td>
+              </tr>
+            )))} </tbody> </table>
+      {/* Totals */}
+      <div className="flex justify-end mt-4">
+        <div className="p-4">
+          <h3 className="text-lg font-bold">Total Bill Amount: {totalBillAmount}</h3>
+          {/* <h3 className="text-lg font-bold">Total Discount: {totalDiscount}</h3> */}
+          <h3 className="text-lg font-bold">Total Receive Amount: {totalReceiveAmount}</h3>
+          <h3 className="text-lg font-bold">Total Due Amount: {totalDueAmount}</h3>
         </div>
       </div>
     </div>
   );
 };
+
 
 export default InvoiceList;

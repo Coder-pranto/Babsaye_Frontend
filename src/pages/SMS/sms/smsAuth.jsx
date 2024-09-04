@@ -1,6 +1,9 @@
 import { useState, useRef } from 'react';
 import { FaArrowLeft, FaIdCard } from 'react-icons/fa';
-import Button from '../../../components/Button'; // Adjust the path as needed
+import Button from '../../../components/Button'; 
+import { userDocumentUpload } from '../../../services/api';
+import { toast } from 'react-toastify';
+
 
 const SmsAuth = () => {
   const [nidFront, setNidFront] = useState(null);
@@ -15,11 +18,42 @@ const SmsAuth = () => {
     const file = e.target.files[0];
     if (file) {
       setImage(URL.createObjectURL(file));
+      console.log(URL.createObjectURL(file));
     }
   };
 
-  const handleSave = () => {
-    // Implement save functionality here
+
+  const handleSave = async () => {
+    if (!nidFront || !nidBack || !tradeLicence) {
+      alert('Please upload all the required images.');
+      return;
+    }
+  
+    const formData = new FormData();
+    formData.append('userId', 'dummyUserId123');
+    formData.append('nidFront', nidFrontInputRef.current.files[0]);
+    formData.append('nidBack', nidBackInputRef.current.files[0]);
+    formData.append('tradeLicence', tradeLicenceInputRef.current.files[0]);
+  
+    try {
+      const response = await userDocumentUpload(formData);
+      if (response.status === 200) {
+        toast.success('Files uploaded successfully!');
+      }
+    } catch (error) {
+      console.error('Error uploading files:', error.message);
+      toast.error('There was an error uploading the files. Please try again.');
+    }
+  };
+  
+
+  const handleReset = () => {
+    setNidFront(null);
+    setNidBack(null);
+    setTradeLicence(null);
+    nidFrontInputRef.current.value = '';
+    nidBackInputRef.current.value = '';
+    tradeLicenceInputRef.current.value = '';
   };
 
   return (
@@ -30,9 +64,10 @@ const SmsAuth = () => {
           <h2 className="text-2xl font-bold text-white">SMS AUTHENTICATION</h2>
         </div>
         <Button
-          text="Go Back"
+          text="Reset"
           bgColor="bg-gray-700 hover:bg-gray-500"
           textColor="text-white"
+          onClick={handleReset}
         />
       </div>
 
