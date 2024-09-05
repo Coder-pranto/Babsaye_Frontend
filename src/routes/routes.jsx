@@ -75,6 +75,7 @@ import ChangePassword from "../pages/Profile/ChangePassword";
 import Role from "../pages/Profile/RoleManagement";
 import CompanyInformation from "../pages/Profile/CompanyInformation";
 import Register from "../pages/User/Register";
+import PaymentMethod from "../pages/SettingsWEB/Payment";
 
 
 const dummyUser = {
@@ -376,6 +377,10 @@ const router = createBrowserRouter([
       {
         path: "/company_information",
         element:<CompanyInformation/>
+      },
+      {
+        path: "/payment_method",
+        element:<PaymentMethod/>
       },
     //   {
     //     path: "/menu",

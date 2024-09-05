@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FaPlus, FaPrint, FaTrash } from 'react-icons/fa';
 import Button from '../../components/Button';
-import { createInvoice, getInvoices, updateInvoice, deleteInvoice, getPDF } from '../../services/api';
+import { getInvoices,deleteInvoice, getPDF } from '../../services/api';
 
 const InvoiceList = () => {
   const [searchClient, setSearchClient] = useState('');
@@ -26,9 +26,9 @@ const InvoiceList = () => {
     }
   };
 
-  const handleSearch = () => {
-    // Implement search functionality here
-  };
+  // const handleSearch = () => {
+  //   // Implement search functionality here
+  // };
 
   const handleReset = () => {
     setSearchClient('');
@@ -41,24 +41,6 @@ const InvoiceList = () => {
       fetchInvoices();
     } catch (error) {
       console.error('Error deleting invoice:', error.message);
-    }
-  };
-
-  const handleCreateInvoice = async (newInvoiceData) => {
-    try {
-      await createInvoice(newInvoiceData);
-      fetchInvoices();
-    } catch (error) {
-      console.error('Error creating invoice:', error);
-    }
-  };
-
-  const handleUpdateInvoice = async (id, updatedData) => {
-    try {
-      await updateInvoice(id, updatedData);
-      fetchInvoices();
-    } catch (error) {
-      console.error('Error updating invoice:', error);
     }
   };
 

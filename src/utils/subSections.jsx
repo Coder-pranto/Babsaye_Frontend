@@ -246,10 +246,16 @@ export const sections = [
                     { name: "Expense Subcategory" }
                 ]
             },
-            { name: "Shortcut Menu" },
-            { name: "Payment Method" },
-            { name: "Company Information" },
-            { name: "Bank" }
+            {
+                name: "Misc",
+                subSubCategories: [
+                    { name: "Shortcut Menu" },
+                    { name: "Payment Method" },
+                    { name: "Company Information" },
+                    { name: "Bank" }
+                ]
+            }
+            
         ]
     },
     {

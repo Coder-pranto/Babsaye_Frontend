@@ -47,7 +47,7 @@ export const updateClientGroup = (id, data) => api.put(`/client-groups/${id}`, d
 export const deleteClientGroup = (id) => api.delete(`/client-groups/${id}`);
 
 
-//* Clients API call
+//* Suppliers API call
 export const fetchSuppliers = () => api.get('/supplier');
 
 export const fetchSuppliersById = (id) => api.get(`/supplier/${id}`);
@@ -406,6 +406,16 @@ export const userDocumentUpload = (data)=> api.post('/documents/upload',data, {
   export const updateInvoice = (id, updateData) => api.put(`/invoices/${id}`, updateData);
   export const deleteInvoice = (id) => api.delete(`/invoices/${id}`);
   
+
+
+//* Return products API's call 
+
+export const createReturn = (returnData) => api.post('/returns', returnData);
+export const getReturns = () => api.get('/returns');
+export const getReturnById = (id) => api.get(`/returns/${id}`);
+export const updateReturn = (id, updateData) => api.put(`/returns/${id}`, updateData);
+export const deleteReturn = (id) => api.delete(`/returns/${id}`);
+
 
   export const getPDF = (id)=> api.get(`/printable/invoice/${id}/print`,{
     responseType: 'blob', // Important to handle binary data
