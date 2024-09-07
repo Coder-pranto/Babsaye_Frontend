@@ -416,7 +416,22 @@ export const getReturnById = (id) => api.get(`/returns/${id}`);
 export const updateReturn = (id, updateData) => api.put(`/returns/${id}`, updateData);
 export const deleteReturn = (id) => api.delete(`/returns/${id}`);
 
-
+export const createPayment = () =>{}
   export const getPDF = (id)=> api.get(`/printable/invoice/${id}/print`,{
     responseType: 'blob', // Important to handle binary data
   })
+
+
+
+
+  // Transfer API calls
+
+export const fetchAllTransfers = () => api.get('/transfers');
+
+export const createTransfer = (data) => api.post('/transfers', data);
+
+export const fetchTransferById = (id) => api.get(`/transfers/${id}`);
+
+export const updateTransfer = (id, data) => api.put(`/transfers/${id}`, data);
+
+export const deleteTransfer = (id) => api.delete(`/transfers/${id}`);

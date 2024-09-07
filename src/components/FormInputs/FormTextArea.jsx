@@ -1,5 +1,3 @@
-
-
 const FormTextArea = ({ label, icon, ...props }) => {
   return (
     <div className="mb-4 flex items-center">

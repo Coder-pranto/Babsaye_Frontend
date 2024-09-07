@@ -1,6 +1,10 @@
-import { useState } from 'react';
-import { FaPlus } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import Button from '../../../components/Button';
+import {
+  fetchAllTransfers,
+  deleteTransfer,
+} from '../../../services/api'; // Assuming you store API calls in a separate 'api.js'
 
 const TransferList = () => {
   const [searchAccount, setSearchAccount] = useState('');
@@ -8,34 +12,38 @@ const TransferList = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [transfers, setTransfers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const [transfers, setTransfers] = useState([
-    {
-      id: 1,
-      date: '2024-07-29',
-      sender_or_receiver: 'John Doe',
-      type: 'Deposit',
-      account: '1234567890',
-      description: 'Monthly deposit',
-      credit: 5000,
-      debit: 0,
-      balance: 5000,
-    },
-    {
-      id: 2,
-      date: '2024-07-30',
-      sender_or_receiver: 'Jane Smith',
-      type: 'Withdrawal',
-      account: '0987654321',
-      description: 'Office supplies',
-      credit: 0,
-      debit: 1500,
-      balance: 3500,
-    },
-    // Add more transfer objects as needed
-  ]);
+  useEffect(() => {
+    fetchTransfers();
+  }, [rowsPerPage, currentPage]);
 
+  const fetchTransfers = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetchAllTransfers();
+      setTransfers(response.data);
+    } catch (err) {
+      setError('Error fetching transfers');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this transfer?')) {
+      try {
+        await deleteTransfer(id);
+        setTransfers((prev) => prev.filter((transfer) => transfer._id !== id));
+      } catch (err) {
+        setError('Error deleting transfer');
+      }
+    }
+  };
 
   const handleReset = () => {
     setSearchAccount('');
@@ -44,10 +52,16 @@ const TransferList = () => {
     setEndDate('');
   };
 
-  // Calculate totals
-  const totalCredit = transfers.reduce((acc, curr) => acc + curr.credit, 0);
-  const totalDebit = transfers.reduce((acc, curr) => acc + curr.debit, 0);
-  const totalBalance = transfers.reduce((acc, curr) => acc + curr.balance, 0);
+  // Filter the transfers based on search criteria
+  const filteredTransfers = transfers.filter((transfer) => {
+    const matchesAccount = searchAccount
+      ? transfer.fromAccount.title.includes(searchAccount) || (transfer.toAccount && transfer.toAccount.title.includes(searchAccount))
+      : true;
+    const matchesType = searchType ? transfer.transactionType === searchType : true;
+    const matchesStartDate = startDate ? new Date(transfer.date) >= new Date(startDate) : true;
+    const matchesEndDate = endDate ? new Date(transfer.date) <= new Date(endDate) : true;
+    return matchesAccount && matchesType && matchesStartDate && matchesEndDate;
+  });
 
   return (
     <div className="mx-auto p-4 mt-10 mb-4 overflow-y-auto">
@@ -59,6 +73,7 @@ const TransferList = () => {
           text="Add New"
           bgColor="bg-[#5D5B10] hover:bg-[#5D5B00]"
           textColor="text-white border border-green-500"
+          onClick={() => console.log('Add new transfer')}
         />
       </div>
 
@@ -82,9 +97,9 @@ const TransferList = () => {
             className="input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">Select type</option>
-            <option value="Deposit">Deposit</option>
-            <option value="Withdrawal">Withdrawal</option>
-            <option value="Cash">Cash</option>
+            <option value="transfer">Transfer</option>
+            <option value="deposit">Deposit</option>
+            <option value="withdraw">Withdraw</option>
           </select>
         </div>
         <div className="p-4">
@@ -114,74 +129,68 @@ const TransferList = () => {
         </div>
       </div>
 
-      {/* Dropdown for number of rows */}
-      <div className="flex justify-start mb-4">
-        <label className="mx-2 text-md font-medium text-gray-700">Show</label>
-        <select
-          value={rowsPerPage}
-          onChange={(e) => setRowsPerPage(Number(e.target.value))}
-          className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value={10}>10</option>
-          <option value={25}>25</option>
-          <option value={50}>50</option>
-          <option value={100}>100</option>
-        </select>
-        <label className="ml-2 text-md font-medium text-gray-700">entries</label>
-      </div>
+      {/* Display loading, error messages */}
+      {loading && <div>Loading transfers...</div>}
+      {error && <div className="text-red-500">{error}</div>}
 
-      <table className="min-w-full bg-white">
-        <thead>
-          <tr>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">SL</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Date</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Sender/Receiver</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Type</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Account</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Description</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Credit</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Debit</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Balance</th>
-          </tr>
-        </thead>
-        <tbody>
-          {transfers.slice(0, rowsPerPage).map((transfer, index) => (
-            <tr key={transfer.id}>
-              <td className="py-2 px-4 border border-gray-200">{index + 1}</td>
-              <td className="py-2 px-4 border border-gray-200">{transfer.date}</td>
-              <td className="py-2 px-4 border border-gray-200">{transfer.sender_or_receiver}</td>
-              <td className="py-2 px-4 border border-gray-200">{transfer.type}</td>
-              <td className="py-2 px-4 border border-gray-200">{transfer.account}</td>
-              <td className="py-2 px-4 border border-gray-200">{transfer.description}</td>
-              <td className="py-2 px-4 border border-gray-200">{transfer.credit}</td>
-              <td className="py-2 px-4 border border-gray-200">{transfer.debit}</td>
-              <td className="py-2 px-4 border border-gray-200">{transfer.balance}</td>
+      {/* Transfer Table */}
+      {!loading && (
+        <table className="min-w-full bg-white">
+          <thead>
+            <tr>
+              <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">SL</th>
+              <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Date</th>
+              <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Sender/Receiver</th>
+              <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Type</th>
+              <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Account</th>
+              <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Description</th>
+              <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Credit</th>
+              <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Debit</th>
+              <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Balance</th>
+              <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Actions</th>
             </tr>
-          ))}
-          {/* Totals Row */}
-          <tr className="font-semibold">
-            <td colSpan="6" className="py-2 px-4 border border-gray-200 text-left">Total</td>
-            <td className="py-2 px-4 border border-gray-200">{totalCredit}</td>
-            <td className="py-2 px-4 border border-gray-200">{totalDebit}</td>
-            <td className="py-2 px-4 border border-gray-200">{totalBalance}</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div className="flex justify-between items-center mt-6 p-4">
-        <span className="text-gray-700 text-sm">
-          Showing 1 to {Math.min(rowsPerPage, transfers.length)} of {transfers.length} entries
-        </span>
-        <div className="flex items-center space-x-2">
-          <button className="px-4 py-2 bg-gray-400 text-black rounded-sm hover:bg-gray-700 transition-colors duration-300">
-            Previous
-          </button>
-          <span className="text-white bg-blue-500 border-1 p-2 font-semibold rounded-sm">1</span>
-          <button className="px-4 py-2 bg-gray-400 text-black rounded-sm hover:bg-gray-700 transition-colors duration-300">
-            Next
-          </button>
-        </div>
-      </div>
+          </thead>
+          <tbody>
+            {filteredTransfers.slice(0, rowsPerPage).map((transfer, index) => (
+              <tr key={transfer._id}>
+                <td className="py-2 px-4 border border-gray-200">{index + 1}</td>
+                <td className="py-2 px-4 border border-gray-200">{new Date(transfer.date).toLocaleDateString()}</td>
+                <td className="py-2 px-4 border border-gray-200">
+                  {transfer.transactionType === 'transfer'
+                    ? `${transfer.fromAccount?.title} / ${transfer.toAccount?.title}`
+                    : `${transfer.fromAccount?.title}`}
+                </td>
+                <td className="py-2 px-4 border border-gray-200">{transfer.transactionType}</td>
+                <td className="py-2 px-4 border border-gray-200">
+                  {transfer.transactionType === 'transfer'
+                    ? `${transfer.fromAccount?.title} / ${transfer.toAccount?.title}`
+                    : transfer.fromAccount?.title}
+                </td>
+                <td className="py-2 px-4 border border-gray-200">{transfer.description}</td>
+                <td className="py-2 px-4 border border-gray-200">
+                  {transfer.transactionType === 'deposit' || transfer.transactionType === 'transfer'
+                    ? transfer.amount
+                    : '-'}
+                </td>
+                <td className="py-2 px-4 border border-gray-200">
+                  {transfer.transactionType === 'withdraw' || transfer.transactionType === 'transfer'
+                    ? transfer.amount
+                    : '-'}
+                </td>
+                <td className="py-2 px-4 border border-gray-200">{transfer.amount}</td>
+                <td className="py-2 px-4 border border-gray-200">
+                  <button
+                    className="px-4 py-1 text-sm text-white bg-red-600 rounded"
+                    onClick={() => handleDelete(transfer._id)}
+                  >
+                    <FaTrash />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 };
