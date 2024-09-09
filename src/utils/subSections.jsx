@@ -118,8 +118,8 @@ export const sections = [
                 subSubCategories: [
                     { name: "Add New Purchase" },
                     { name: "Purchase List" },
-                    { name: "Purchase Invoice List" },
-                    { name: "Purchase Report" },
+                    // { name: "Purchase Invoice List" },
+                    // { name: "Purchase Report" },
                     { name: "Product Stock" }
                 ]
             }

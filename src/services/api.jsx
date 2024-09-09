@@ -435,3 +435,10 @@ export const fetchTransferById = (id) => api.get(`/transfers/${id}`);
 export const updateTransfer = (id, data) => api.put(`/transfers/${id}`, data);
 
 export const deleteTransfer = (id) => api.delete(`/transfers/${id}`);
+
+
+
+//* Payment API calls
+
+
+export const createPayment2 = (paymentData) => api.post(`/payment/init`, paymentData);

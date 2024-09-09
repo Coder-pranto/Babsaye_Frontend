@@ -1,43 +1,30 @@
-/* eslint-disable no-unused-vars */
-import { useState } from 'react';
-import { FaPlus, FaTrashAlt, FaEdit } from 'react-icons/fa';
+
+
+import { useState, useEffect } from 'react';
+import { FaPlus } from 'react-icons/fa';
 import Button from '../../../components/Button';
+import { fetchProducts } from '../../../services/api';
 
 const ProductStock = () => {
   const [searchAll, setSearchAll] = useState('');
   const [searchClientGroup, setSearchClientGroup] = useState('');
   const [searchDate, setSearchDate] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [products, setProducts] = useState([]);
 
-  const [products, setProducts] = useState([
-    {
-      id: 1,
-      product: 'Product 1',
-      group: 'Group 1',
-      openingStock: 100,
-      buyQuantity: 20,
-      saleQuantity: 10,
-      stock: 110,
-      carton: 2,
-      totalBuyingPrice: 2000,
-      totalSellingPrice: 3000,
-      createdAt: '2024-07-29',
-    },
-    {
-      id: 2,
-      product: 'Product 2',
-      group: 'Group 2',
-      openingStock: 50,
-      buyQuantity: 30,
-      saleQuantity: 5,
-      stock: 75,
-      carton: 1,
-      totalBuyingPrice: 1500,
-      totalSellingPrice: 2500,
-      createdAt: '2024-07-30',
-    },
-    // Add more product objects as needed
-  ]);
+  // Fetch products from the API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetchProducts();
+        console.log(response.data);
+        setProducts(response.data);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleSearch = () => {
     // Implement search functionality here
@@ -49,8 +36,9 @@ const ProductStock = () => {
     setSearchDate('');
   };
 
-  const totalBuyingPrice = products.reduce((acc, product) => acc + product.totalBuyingPrice, 0);
-  const totalSellingPrice = products.reduce((acc, product) => acc + product.totalSellingPrice, 0);
+  // Calculate total buying and selling prices
+  const totalBuyingPrice = products.reduce((acc, product) => acc + product.buyingPrice, 0);
+  const totalSellingPrice = products.reduce((acc, product) => acc + product.sellingPrice, 0);
 
   return (
     <div className="mx-auto p-4 mt-10 mb-4 overflow-y-auto">
@@ -129,32 +117,33 @@ const ProductStock = () => {
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Product</th>
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Group</th>
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Opening Stock</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Buy Quantity</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Sale Quantity</th>
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Stock</th>
             <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Carton</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Total Buying Price</th>
-            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Total Selling Price</th>
+            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Buying Price</th>
+            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Selling Price</th>
+            <th className="bg-primary py-2 px-4 border border-gray-200 text-left text-sm font-semibold text-white">Profit %</th>
           </tr>
         </thead>
         <tbody>
-          {products.slice(0, rowsPerPage).map((product) => (
-            <tr key={product.id}>
-              <td className="py-2 px-4 border border-gray-200">{product.id}</td>
-              <td className="py-2 px-4 border border-gray-200">{product.product}</td>
-              <td className="py-2 px-4 border border-gray-200">{product.group}</td>
-              <td className="py-2 px-4 border border-gray-200">{product.openingStock}</td>
-              <td className="py-2 px-4 border border-gray-200">{product.buyQuantity}</td>
-              <td className="py-2 px-4 border border-gray-200">{product.saleQuantity}</td>
-              <td className="py-2 px-4 border border-gray-200">{product.stock}</td>
-              <td className="py-2 px-4 border border-gray-200">{product.carton}</td>
-              <td className="py-2 px-4 border border-gray-200">{product.totalBuyingPrice}</td>
-              <td className="py-2 px-4 border border-gray-200">{product.totalSellingPrice}</td>
-            </tr>
-          ))}
+          {products.slice(0, rowsPerPage).map((product) => {
+            const profitPercentage = ((product.sellingPrice - product.buyingPrice) / product.buyingPrice) * 100;
+            return (
+              <tr key={product._id}>
+                <td className="py-2 px-4 border border-gray-200">{product._id}</td>
+                <td className="py-2 px-4 border border-gray-200">{product.productName}</td>
+                <td className="py-2 px-4 border border-gray-200">{product.productGroup.groupName}</td>
+                <td className="py-2 px-4 border border-gray-200">{product.openingStock}</td>
+                <td className="py-2 px-4 border border-gray-200">{product.openingStock}</td>
+                <td className="py-2 px-4 border border-gray-200">{product.carton}</td>
+                <td className="py-2 px-4 border border-gray-200">{product.buyingPrice}</td>
+                <td className="py-2 px-4 border border-gray-200">{product.sellingPrice}</td>
+                <td className="py-2 px-4 border border-gray-200">{profitPercentage.toFixed(2)}%</td>
+              </tr>
+            );
+          })}
           {/* Totals Row */}
           <tr className="bg-gray-100">
-            <td className="py-2 px-4 border border-gray-200" colSpan="8">Total</td>
+            <td className="py-2 px-4 border border-gray-200" colSpan="7">Total</td>
             <td className="py-2 px-4 border border-gray-200 font-bold">{totalBuyingPrice}</td>
             <td className="py-2 px-4 border border-gray-200 font-bold">{totalSellingPrice}</td>
           </tr>
@@ -178,6 +167,8 @@ const ProductStock = () => {
     </div>
   );
 };
+
+
 
 export default ProductStock;
 

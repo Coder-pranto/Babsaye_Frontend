@@ -76,6 +76,8 @@ import Role from "../pages/Profile/RoleManagement";
 import CompanyInformation from "../pages/Profile/CompanyInformation";
 import Register from "../pages/User/Register";
 import PaymentMethod from "../pages/SettingsWEB/Payment";
+import PaymentCancel from "../pages/SettingsWEB/PaymentCancel";
+import PaymentSuccess from "../pages/SettingsWEB/PaymentSuccess";
 
 
 const dummyUser = {
@@ -381,6 +383,14 @@ const router = createBrowserRouter([
       {
         path: "/payment_method",
         element:<PaymentMethod/>
+      },
+      {
+        path: "/payment/fail",
+        element:<PaymentCancel/>
+      },
+      {
+        path: "/payment/success",
+        element:<PaymentSuccess/>
       },
     //   {
     //     path: "/menu",
