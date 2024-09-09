@@ -249,7 +249,7 @@ export const sections = [
             {
                 name: "Misc",
                 subSubCategories: [
-                    { name: "Shortcut Menu" },
+                    // { name: "Shortcut Menu" },
                     { name: "Payment Method" },
                     { name: "Company Information" },
                     { name: "Bank" }
