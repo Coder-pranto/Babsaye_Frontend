@@ -78,6 +78,8 @@ import Register from "../pages/User/Register";
 import PaymentMethod from "../pages/SettingsWEB/Payment";
 import PaymentCancel from "../pages/SettingsWEB/PaymentCancel";
 import PaymentSuccess from "../pages/SettingsWEB/PaymentSuccess";
+import Bank from "../pages/SettingsWEB/Bank";
+import BankList from "../pages/SettingsWEB/BankList";
 
 
 const dummyUser = {
@@ -392,6 +394,15 @@ const router = createBrowserRouter([
         path: "/payment/success",
         element:<PaymentSuccess/>
       },
+      {
+        path: "/bank",
+        element:<Bank/>
+      },
+      {
+        path: "/bank_list",
+        element:<BankList/>
+      },
+
     //   {
     //     path: "/menu",
     //     element: <ProtectedRoute element={<Products />} />,

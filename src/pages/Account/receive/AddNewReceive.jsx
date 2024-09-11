@@ -23,7 +23,7 @@ const AddNewReceive = () => {
     const [clients, setClients] = useState([]);
     const [accounts, setAccounts] = useState([]);
     const [categories, setCategories] = useState([]);
-    const [subCatnegories, setSubCategories] = useState([]);
+    const [subCategories, setSubCategories] = useState([]);
     const [isSubCategoryDisabled, setIsSubCategoryDisabled] = useState(true);
 
     useEffect(() => {

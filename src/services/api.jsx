@@ -442,3 +442,19 @@ export const deleteTransfer = (id) => api.delete(`/transfers/${id}`);
 
 
 export const createPayment2 = (paymentData) => api.post(`/payment/init`, paymentData);
+
+
+
+//* Bank Account API calls
+
+export const fetchBankAccounts = () => api.get('/bank/accounts');
+export const fetchBankAccountById = (id) => api.get(`/bank/accounts/${id}`);
+export const addBankAccount = (data) => api.post('/bank/accounts', data);
+export const updateBankAccount = (id, data) => api.put(`/bank/accounts/${id}`, data);
+export const deleteBankAccount = (id) => api.delete(`/bank/accounts/${id}`);
+
+//* Transaction API calls
+
+export const depositFunds = (accountId, amount) => api.post('/bank/deposit', {accountId, amount});
+export const withdrawFunds = (accountId, amount) => api.post('/bank/withdraw', {accountId, amount});
+export const transferFunds = (fromAccountId, toAccountId, amount) => api.post('/bank/transfer', {fromAccountId, toAccountId, amount});

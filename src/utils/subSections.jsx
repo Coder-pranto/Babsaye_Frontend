@@ -252,7 +252,8 @@ export const sections = [
                     // { name: "Shortcut Menu" },
                     { name: "Payment Method" },
                     { name: "Company Information" },
-                    { name: "Bank" }
+                    { name: "Bank" },
+                    { name: "Bank List" }
                 ]
             }
             
